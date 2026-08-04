@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Rate Calculator for Gmail",
+  "version": "1.2.0",
+  "description": "Analyze an open Gmail quote request and open the Rate Calculator with the shipment details filled in.",
+  "permissions": ["activeTab"],
+  "host_permissions": ["https://mail.google.com/*"],
+  "action": {
+    "default_title": "Analyze quote email",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "32": "icon32.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://mail.google.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}

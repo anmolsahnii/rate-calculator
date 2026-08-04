@@ -1,0 +1,662 @@
+[
+  {
+    "date": "2026-07-28",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Vaughan, ON",
+    "skids": 2,
+    "service": "Freight",
+    "price": 109,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-28",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Ottawa, ON",
+    "skids": 4,
+    "service": "Straight truck",
+    "price": 505,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-27",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Cornwall, ON",
+    "skids": 1,
+    "service": "Freight",
+    "price": 222,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-27",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Cornwall, ON",
+    "skids": 1,
+    "service": "Freight",
+    "price": 177,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-27",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Niagara, ON",
+    "skids": 1,
+    "service": "Freight",
+    "price": 161,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-24",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Vaughan, ON",
+    "skids": 5,
+    "service": "Freight",
+    "price": 191,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-24",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Ottawa, ON",
+    "skids": 1,
+    "service": "Freight",
+    "price": 193,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-24",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Ottawa, ON",
+    "skids": 5,
+    "service": "Freight",
+    "price": 505,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-24",
+    "customer": "Radiant",
+    "origin": "Saint-Laurent, QC",
+    "destination": "Aurora, ON",
+    "skids": 1,
+    "service": "Freight",
+    "price": 300,
+    "kind": "negotiated"
+  },
+  {
+    "date": "2026-07-24",
+    "customer": "Radiant",
+    "origin": "Saint-Laurent, QC",
+    "destination": "Aurora, ON",
+    "skids": 1,
+    "service": "Freight",
+    "price": 382,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-22",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Ottawa, ON",
+    "skids": 1,
+    "service": "Freight",
+    "price": 247,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-22",
+    "customer": "Canada Cartage",
+    "origin": "Mississauga, ON",
+    "destination": "Vaughan, ON",
+    "skids": 32,
+    "service": "FTL",
+    "price": 396,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-21",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Ottawa, ON",
+    "skids": 1,
+    "service": "Freight",
+    "price": 173,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-21",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Etobicoke, ON",
+    "skids": null,
+    "service": "Freight",
+    "price": 226,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-15",
+    "customer": "Canada Cartage",
+    "origin": "Mississauga, ON",
+    "destination": "Vaughan, ON",
+    "skids": 7,
+    "service": "FTL",
+    "price": 389,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-14",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Ottawa, ON",
+    "skids": 1,
+    "service": "Freight",
+    "price": 184,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-14",
+    "customer": "Canada Cartage",
+    "origin": "Mississauga, ON",
+    "destination": "Vaughan, ON",
+    "skids": 6,
+    "service": "Freight",
+    "price": 455,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-14",
+    "customer": "Canada Cartage",
+    "origin": "Mississauga, ON",
+    "destination": "Vaughan, ON",
+    "skids": 6,
+    "service": "Freight",
+    "price": 350,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-13",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Quebec City, QC",
+    "skids": 3,
+    "service": "Freight",
+    "price": 1264,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-13",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Ottawa, ON",
+    "skids": 1,
+    "service": "Freight",
+    "price": 244,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-13",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Vaughan, ON",
+    "skids": 4,
+    "service": "Freight",
+    "price": 155,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-09",
+    "customer": "Radiant",
+    "origin": "Saint-Laurent, QC",
+    "destination": "Hamilton, ON",
+    "skids": 1,
+    "service": "Freight",
+    "price": 173,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-07",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Vaughan, ON",
+    "skids": 15,
+    "service": "FTL",
+    "price": 350,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-07",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Vaughan, ON",
+    "skids": 15,
+    "service": "FTL",
+    "price": 425,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-07",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Whitby, ON",
+    "skids": 1,
+    "service": "Freight",
+    "price": 135,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-07-02",
+    "customer": "Canada Cartage",
+    "origin": "Montreal, QC",
+    "destination": "Mississauga, ON",
+    "skids": null,
+    "service": "LTL",
+    "price": 723,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-06-30",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Saint-Laurent, QC",
+    "skids": null,
+    "service": "Freight",
+    "price": 552,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-06-29",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Niagara, ON",
+    "skids": 2,
+    "service": "Freight",
+    "price": 378,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-06-29",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Ottawa, ON",
+    "skids": 3,
+    "service": "Freight",
+    "price": 632,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-06-24",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Vaughan, ON",
+    "skids": 7,
+    "service": "Straight truck",
+    "price": 288,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-06-24",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Barrie, ON",
+    "skids": 1,
+    "service": "Straight truck",
+    "price": 174,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-06-18",
+    "customer": "Nippon Express",
+    "origin": "Mississauga, ON",
+    "destination": "Oakville, ON",
+    "skids": 2,
+    "service": "LTL",
+    "price": 182,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-06-17",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Ottawa, ON",
+    "skids": null,
+    "service": "Freight",
+    "price": 174,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-06-17",
+    "customer": "Ameri-Connect",
+    "origin": "Mississauga, ON",
+    "destination": "Ottawa, ON",
+    "skids": 1,
+    "service": "LTL",
+    "price": 160,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-06-17",
+    "customer": "Ameri-Connect",
+    "origin": "Mississauga, ON",
+    "destination": "Ottawa, ON",
+    "skids": 4,
+    "service": "LTL",
+    "price": 468,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-06-15",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Montreal, QC",
+    "skids": null,
+    "service": "Freight",
+    "price": 559,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-06-11",
+    "customer": "Radiant",
+    "origin": "Saint-Laurent, QC",
+    "destination": "Kingston, ON",
+    "skids": 1,
+    "service": "Freight",
+    "price": 193,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-06-11",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Montreal, QC",
+    "skids": 1,
+    "service": "Freight",
+    "price": 559,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-06-10",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Brossard, QC",
+    "skids": 12,
+    "service": "Freight",
+    "price": 1200,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-06-10",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Brossard, QC",
+    "skids": 12,
+    "service": "Freight",
+    "price": 1358,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-06-09",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Barrie, ON",
+    "skids": 1,
+    "service": "Freight",
+    "price": 208,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-06-08",
+    "customer": "Canada Cartage",
+    "origin": "Mississauga, ON",
+    "destination": "Cornwall, ON",
+    "skids": 1,
+    "service": "Freight",
+    "price": 180,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-06-08",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Cornwall, ON",
+    "skids": null,
+    "service": "Freight",
+    "price": 243,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-06-08",
+    "customer": "Radiant",
+    "origin": "Montreal, QC",
+    "destination": "Ottawa, ON",
+    "skids": 13,
+    "service": "LTL",
+    "price": 600,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-06-05",
+    "customer": "Radiant",
+    "origin": "Saint-Laurent, QC",
+    "destination": "Ottawa, ON",
+    "skids": 1,
+    "service": "Freight",
+    "price": 165,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-05-29",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Ottawa, ON",
+    "skids": null,
+    "service": "Freight",
+    "price": 119,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-05-25",
+    "customer": "Nippon Express",
+    "origin": "Montreal, QC",
+    "destination": "Markham, ON",
+    "skids": null,
+    "service": "LTL",
+    "price": 227,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-05-20",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Etobicoke, ON",
+    "skids": 7,
+    "service": "Freight",
+    "price": 234,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-05-20",
+    "customer": "Hellmann",
+    "origin": "Mississauga, ON",
+    "destination": "Hamilton, ON",
+    "skids": null,
+    "service": "Freight",
+    "price": 144,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-05-14",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Guelph, ON",
+    "skids": 9,
+    "service": "Freight",
+    "price": 285,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-04-27",
+    "customer": "Nippon Express",
+    "origin": "Mississauga, ON",
+    "destination": "Pickering, ON",
+    "skids": 2,
+    "service": "Freight",
+    "price": 219,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-04-02",
+    "customer": "Hellmann",
+    "origin": "Mississauga, ON",
+    "destination": "Whitby, ON",
+    "skids": null,
+    "service": "FTL",
+    "price": 938,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-04-01",
+    "customer": "Hellmann",
+    "origin": "Mississauga, ON",
+    "destination": "Whitby, ON",
+    "skids": null,
+    "service": "FTL",
+    "price": 938,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-03-26",
+    "customer": "Hellmann",
+    "origin": "Mississauga, ON",
+    "destination": "Whitby, ON",
+    "skids": 12,
+    "service": "FTL",
+    "price": 591,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-02-23",
+    "customer": "Nippon Express",
+    "origin": "Mississauga, ON",
+    "destination": "Vaughan, ON",
+    "skids": 1,
+    "service": "Freight",
+    "price": 108,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-02-03",
+    "customer": "Hellmann",
+    "origin": "Mississauga, ON",
+    "destination": "Whitby, ON",
+    "skids": 5,
+    "service": "FTL",
+    "price": 260,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-02-02",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Guelph, ON",
+    "skids": 60,
+    "service": "Freight",
+    "price": 780,
+    "kind": "negotiated"
+  },
+  {
+    "date": "2026-01-23",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Guelph, ON",
+    "skids": 60,
+    "service": "Freight",
+    "price": 343,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-01-20",
+    "customer": "Nippon Express",
+    "origin": "Mississauga, ON",
+    "destination": "Toronto, ON",
+    "skids": 1,
+    "service": "Freight",
+    "price": 365,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-01-14",
+    "customer": "Nippon Express",
+    "origin": "Mississauga, ON",
+    "destination": "Toronto, ON",
+    "skids": null,
+    "service": "Freight",
+    "price": 248,
+    "kind": "quote"
+  },
+  {
+    "date": "2025-11-24",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Peterborough, ON",
+    "skids": null,
+    "service": "FTL",
+    "price": 860,
+    "kind": "quote"
+  },
+  {
+    "date": "2025-11-04",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Toronto, ON",
+    "skids": null,
+    "service": "Freight",
+    "price": 65,
+    "kind": "negotiated"
+  },
+  {
+    "date": "2025-10-31",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Toronto, ON",
+    "skids": 1,
+    "service": "Freight",
+    "price": 55,
+    "kind": "quote"
+  },
+  {
+    "date": "2025-10-15",
+    "customer": "Hellmann",
+    "origin": "Montreal, QC",
+    "destination": "Whitby, ON",
+    "skids": 3,
+    "service": "LTL",
+    "price": 550,
+    "kind": "quote"
+  },
+  {
+    "date": "2025-10-14",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Ottawa, ON",
+    "skids": null,
+    "service": "FTL",
+    "price": 145,
+    "kind": "quote"
+  },
+  {
+    "date": "2025-10-08",
+    "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Ottawa, ON",
+    "skids": null,
+    "service": "FTL",
+    "price": 450,
+    "kind": "quote"
+  }
+]

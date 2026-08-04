@@ -1,0 +1,13 @@
+RATE CALCULATOR FOR GMAIL
+
+1. Open chrome://extensions in Google Chrome.
+2. Turn on Developer mode in the top-right corner.
+3. Click Load unpacked.
+4. Select the rate-calculator-chrome folder containing this file.
+5. Pin Rate Calculator for Gmail to the Chrome toolbar.
+6. Refresh Gmail once.
+
+Open a customer quote email and click the gold Rate Calculator button.
+
+Complete emails open the calculated quote automatically. If pickup,
+destination, or pallet count is unclear, the popup lets you correct it first.
