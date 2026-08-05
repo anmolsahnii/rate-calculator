@@ -378,6 +378,35 @@ function resolveCustomerRate(
     if (
       customer === "spot" &&
       service === "ltl" &&
+      destination === "montreal local"
+    ) {
+      return {
+        base: montrealCard.local[rateIndex(pallets, montrealCard.local.length)],
+        note: "Generic MTL LTL Rates - Local Zones - Rate per pallet",
+        card,
+        fuelMode: "add",
+      };
+    }
+
+    if (
+      customer === "spot" &&
+      service === "ltl" &&
+      destination === "montreal exterior"
+    ) {
+      return {
+        base:
+          montrealCard.exterior[
+            rateIndex(pallets, montrealCard.exterior.length)
+          ],
+        note: "Generic MTL LTL Rates - Exterior Zones - Rate per pallet",
+        card,
+        fuelMode: "add",
+      };
+    }
+
+    if (
+      customer === "spot" &&
+      service === "ltl" &&
       ["montreal", "dorval", "lachine", "saint-laurent", "brossard", "laval"].includes(
         destination,
       )
@@ -399,7 +428,7 @@ function resolveCustomerRate(
   ) {
     return {
       base: montrealCard.local[rateIndex(pallets, montrealCard.local.length)],
-      note: "Spot Montreal Local Zones per-pallet table",
+      note: "Generic MTL LTL Rates - Local Zones - Rate per pallet",
       card,
       fuelMode: "add",
     };
@@ -413,7 +442,7 @@ function resolveCustomerRate(
     return {
       base:
         montrealCard.exterior[rateIndex(pallets, montrealCard.exterior.length)],
-      note: "Spot Montreal Exterior Zones per-pallet table",
+      note: "Generic MTL LTL Rates - Exterior Zones - Rate per pallet",
       card,
       fuelMode: "add",
     };
