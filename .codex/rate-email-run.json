@@ -1,0 +1,19 @@
+{
+  "automation_id": "update-rate-calculator-from-gmail-quotes",
+  "last_successful_run": "2026-08-05T15:01:44Z",
+  "review_window_start": "2026-07-06",
+  "review_window_end": "2026-08-05",
+  "reviewed_high_level": {
+    "gmail_searches": [
+      "recent logistics/rate terms across mailbox",
+      "sent messages with quote/rate terms",
+      "sent messages containing quoted customer price language"
+    ],
+    "threads_read": 13
+  },
+  "normalized_facts_added": 19,
+  "notes": [
+    "Stored normalized lane, pallet/service, and price facts only.",
+    "No email bodies, message IDs, contact details, or raw sensitive content are stored."
+  ]
+}

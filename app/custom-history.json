@@ -1,5 +1,195 @@
 [
   {
+    "date": "2026-08-05",
+    "customer": "Radiant",
+    "origin": "Mississauga",
+    "destination": "Quebec",
+    "skids": 7,
+    "service": "LTL",
+    "price": 1034,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-04",
+    "customer": "Radiant",
+    "origin": "Mississauga",
+    "destination": "Toronto",
+    "skids": 6,
+    "service": "LTL",
+    "price": 224,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-04",
+    "customer": "Radiant",
+    "origin": "Mississauga",
+    "destination": "Whitby",
+    "skids": 5,
+    "service": "LTL",
+    "price": 259,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-04",
+    "customer": "Radiant",
+    "origin": "Mississauga",
+    "destination": "Ottawa",
+    "skids": 4,
+    "service": "LTL",
+    "price": 350,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-04",
+    "customer": "Radiant",
+    "origin": "Mississauga",
+    "destination": "St. Catharines",
+    "skids": 3,
+    "service": "LTL",
+    "price": 394,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-04",
+    "customer": "Radiant",
+    "origin": "Mississauga",
+    "destination": "London",
+    "skids": 6,
+    "service": "LTL",
+    "price": 450,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-04",
+    "customer": "Radiant",
+    "origin": "Mississauga",
+    "destination": "Brantford",
+    "skids": 3,
+    "service": "LTL",
+    "price": 224,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-04",
+    "customer": "Radiant",
+    "origin": "Mississauga",
+    "destination": "Kitchener",
+    "skids": 3,
+    "service": "LTL",
+    "price": 224,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-04",
+    "customer": "Radiant",
+    "origin": "Mississauga",
+    "destination": "Guelph",
+    "skids": 4,
+    "service": "LTL",
+    "price": 234,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-04",
+    "customer": "Radiant",
+    "origin": "Mississauga",
+    "destination": "London",
+    "skids": 5,
+    "service": "LTL",
+    "price": 450,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-04",
+    "customer": "Radiant",
+    "origin": "Mississauga",
+    "destination": "Toronto",
+    "skids": 4,
+    "service": "LTL",
+    "price": 179,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-04",
+    "customer": "Radiant",
+    "origin": "Mississauga",
+    "destination": "Ottawa",
+    "skids": 3,
+    "service": "LTL",
+    "price": 300,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-04",
+    "customer": "Radiant",
+    "origin": "Mississauga",
+    "destination": "Toronto",
+    "skids": 4,
+    "service": "LTL",
+    "price": 179,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-04",
+    "customer": "Radiant",
+    "origin": "Mississauga",
+    "destination": "Ottawa",
+    "skids": 3,
+    "service": "LTL",
+    "price": 300,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-04",
+    "customer": "Radiant",
+    "origin": "Mississauga",
+    "destination": "Ottawa",
+    "skids": 9,
+    "service": "Straight Truck",
+    "price": 995,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-04",
+    "customer": "Radiant",
+    "origin": "Mississauga",
+    "destination": "Concord",
+    "skids": 3,
+    "service": "LTL",
+    "price": 130,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-04",
+    "customer": "Radiant",
+    "origin": "St. Clements",
+    "destination": "Oakville",
+    "skids": 1,
+    "service": "Dedicated",
+    "price": 345,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-04",
+    "customer": "Radiant",
+    "origin": "Saint Laurent",
+    "destination": "Aurora",
+    "skids": 1,
+    "service": "LTL",
+    "price": 210,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-04",
+    "customer": "Canada Cartage",
+    "origin": "Markham",
+    "destination": "Mississauga",
+    "skids": 8,
+    "service": "Straight Truck",
+    "price": 180,
+    "kind": "negotiated"
+  },
+  {
     "date": "2026-07-29",
     "customer": "Canada Cartage",
     "origin": "markham",
