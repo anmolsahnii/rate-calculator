@@ -18,6 +18,7 @@ import {
   ontarioZones,
   palletLaneCards,
   rateCards,
+  spotOntarioZones,
   straightTruckMax5Ton,
   vessiReturnLaneCards,
   type CustomerId,
@@ -222,7 +223,7 @@ function resolveCustomerRate(
     customer === "spot" &&
     service === "straight"
   ) {
-    const zone = zoneFor(destination, ontarioZones);
+    const zone = zoneFor(destination, spotOntarioZones);
     if (zone && straightTruckMax5Ton[zone - 1] !== undefined) {
       return {
         base: straightTruckMax5Ton[zone - 1],
@@ -317,6 +318,8 @@ function resolveCustomerRate(
     const zone =
       service === "ftl"
         ? zoneFor(destination, ftlZones)
+        : customer === "spot"
+          ? zoneFor(destination, spotOntarioZones)
         : zoneFor(destination, ontarioZones);
 
     if (service === "ltl" && customer === "canada") {

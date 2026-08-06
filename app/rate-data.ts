@@ -136,6 +136,41 @@ export const ontarioZones: Record<number, string[]> = {
   6: ["ottawa", "nepean"],
 };
 
+export const spotOntarioZones: Record<number, string[]> = {
+  1: [
+    "vaughan",
+    "toronto",
+    "scarborough",
+    "north york",
+    "mississauga",
+    "etobicoke",
+    "brampton",
+  ],
+  2: ["oakville", "milton", "georgetown", "burlington", "bolton", "caledon"],
+  3: [
+    "pickering",
+    "oshawa",
+    "orangeville",
+    "newmarket",
+    "markham",
+    "hamilton",
+    "aurora",
+    "richmond hill",
+    "whitby",
+  ],
+  4: [
+    "kitchener",
+    "guelph",
+    "cookstown",
+    "cambridge",
+    "barrie",
+    "waterloo",
+    "simcoe",
+  ],
+  5: ["ottawa"],
+  6: ["niagara", "st catharines"],
+};
+
 export const ftlZones: Record<number, string[]> = {
   1: [
     "mississauga",
@@ -496,6 +531,9 @@ export const cityAliases: Record<string, string> = {
   "niagara falls": "niagara",
   "niagara on the lake": "niagara-on-the-lake",
   notl: "niagara-on-the-lake",
+  "st catherine": "st catharines",
+  "st. catherine": "st catharines",
+  "saint catherine": "st catharines",
   "st. catharines": "st catharines",
 };
 
@@ -503,6 +541,7 @@ export const destinationSuggestions = Array.from(
   new Set([
     "Montreal Local",
     "Montreal Exterior",
+    ...Object.values(spotOntarioZones).flat(),
     ...Object.values(ontarioZones).flat(),
     ...Object.values(ftlZones).flat(),
     ...montrealLocal,
