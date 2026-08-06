@@ -2,6 +2,26 @@
   {
     "date": "2026-08-05",
     "customer": "Radiant",
+    "origin": "Montreal",
+    "destination": "Caledon",
+    "skids": 2,
+    "service": "LTL",
+    "price": 640,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-05",
+    "customer": "Radiant",
+    "origin": "Mississauga",
+    "destination": "Kanata",
+    "skids": 1,
+    "service": "LTL",
+    "price": 245,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-05",
+    "customer": "Radiant",
     "origin": "Mississauga",
     "destination": "Quebec",
     "skids": 7,
