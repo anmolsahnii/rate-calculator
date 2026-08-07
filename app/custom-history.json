@@ -1,5 +1,75 @@
 [
   {
+    "date": "2026-08-07",
+    "customer": "Canada Cartage",
+    "origin": "Mississauga",
+    "destination": "Brossard",
+    "skids": 0,
+    "service": "FTL",
+    "price": 1000,
+    "kind": "negotiated"
+  },
+  {
+    "date": "2026-08-06",
+    "customer": "Radiant",
+    "origin": "Mississauga",
+    "destination": "Vancouver",
+    "skids": 1,
+    "service": "LTL",
+    "price": 480,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-06",
+    "customer": "Canada Cartage",
+    "origin": "Mississauga",
+    "destination": "Brossard",
+    "skids": 4,
+    "service": "LTL",
+    "price": 745,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-06",
+    "customer": "Hellmann",
+    "origin": "London",
+    "destination": "Whitby",
+    "skids": 4,
+    "service": "LTL",
+    "price": 680,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-06",
+    "customer": "Larry Truckline",
+    "origin": "Mississauga",
+    "destination": "Navan",
+    "skids": 7,
+    "service": "LTL",
+    "price": 820,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-06",
+    "customer": "Radiant",
+    "origin": "Caledon",
+    "destination": "Mississauga",
+    "skids": 2,
+    "service": "LTL",
+    "price": 140,
+    "kind": "quote"
+  },
+  {
+    "date": "2026-08-06",
+    "customer": "Radiant",
+    "origin": "Caledon",
+    "destination": "Cornwall",
+    "skids": 2,
+    "service": "LTL",
+    "price": 274,
+    "kind": "negotiated"
+  },
+  {
     "date": "2026-08-05",
     "customer": "Radiant",
     "origin": "Montreal",

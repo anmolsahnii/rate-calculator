@@ -64,7 +64,7 @@ test("extracts a custom pickup and accessorials", () => {
         "Pickup: Richmond Hill, ON",
         "Destination: Oakville, ON",
         "Pallets: 3",
-        "Appointment and inside delivery required with 1 helper.",
+        "Appointment and inside delivery required with 1 helper and driver assist.",
       ].join("\n"),
       url: "https://mail.google.com/",
     },
@@ -77,6 +77,7 @@ test("extracts a custom pickup and accessorials", () => {
   assert.equal(quote.pallets, 3);
   assert.equal(quote.appointment, true);
   assert.equal(quote.inside, true);
+  assert.equal(quote.driverAssist, true);
   assert.equal(quote.helpers, 1);
 });
 

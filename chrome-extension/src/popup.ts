@@ -134,6 +134,7 @@ async function openCalculator(details: ParsedQuote) {
   if (details.appointment) url.searchParams.set("appointment", "1");
   if (details.returns) url.searchParams.set("returns", "1");
   if (details.dunnage) url.searchParams.set("dunnage", "1");
+  if (details.driverAssist) url.searchParams.set("driverAssist", "1");
   if (details.helpers) url.searchParams.set("helpers", String(details.helpers));
 
   await chrome.tabs.create({ url: url.toString() });

@@ -27,6 +27,7 @@ export type ParsedQuote = {
   appointment: boolean;
   returns: boolean;
   dunnage: boolean;
+  driverAssist: boolean;
   helpers: number;
 };
 
@@ -169,6 +170,7 @@ export function parseQuoteEmail(
     appointment: /\bappointment\b/i.test(messageText),
     returns: /\b(?:pallet return|return pallets?)\b/i.test(messageText),
     dunnage: /\bdunnage(?: removal)?\b/i.test(messageText),
+    driverAssist: /\bdriver'?s?\s+assist(?:ance)?\b/i.test(messageText),
     helpers: helperMatch ? Math.min(6, Number(helperMatch[1])) : 0,
   };
 }

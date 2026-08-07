@@ -45,7 +45,8 @@ type AccessorialKey =
   | "inside"
   | "appointment"
   | "returns"
-  | "dunnage";
+  | "dunnage"
+  | "driverAssist";
 type OriginMode = "warehouse" | "custom";
 
 type RateResolution = {
@@ -91,6 +92,7 @@ const defaultAccessorials: Record<AccessorialKey, number> = {
   appointment: 25,
   returns: 45,
   dunnage: 45,
+  driverAssist: 80,
 };
 
 function clean(value: unknown) {
@@ -265,6 +267,7 @@ function resolveCustomerRate(
             appointment: 30,
             returns: 45,
             dunnage: 45,
+            driverAssist: 80,
           },
         };
       }
@@ -624,6 +627,7 @@ export function RateCalculator() {
   const [appointment, setAppointment] = useState(false);
   const [returns, setReturns] = useState(false);
   const [dunnage, setDunnage] = useState(false);
+  const [driverAssist, setDriverAssist] = useState(false);
   const [helpers, setHelpers] = useState(0);
   const [market, setMarket] = useState(10);
   const [fscOverride, setFscOverride] = useState<number | null>(null);
@@ -718,6 +722,7 @@ export function RateCalculator() {
     setAppointment(prefill.appointment);
     setReturns(prefill.returns);
     setDunnage(prefill.dunnage);
+    setDriverAssist(prefill.driverAssist);
   }, []);
 
   const matches = (() => {
@@ -803,6 +808,7 @@ export function RateCalculator() {
       ["appointment", appointment],
       ["returns", returns],
       ["dunnage", dunnage],
+      ["driverAssist", driverAssist],
     ];
     const included = new Set(rate?.includedAccessorialIds ?? []);
     const accessorialRates = rate?.accessorialRates ?? defaultAccessorials;
@@ -880,6 +886,7 @@ export function RateCalculator() {
     setAppointment(false);
     setReturns(false);
     setDunnage(false);
+    setDriverAssist(false);
     setHelpers(0);
     setMarket(10);
     setFscOverride(null);
@@ -1150,6 +1157,15 @@ export function RateCalculator() {
                   />
                   <span>Dunnage removal</span>
                   <small>+$45</small>
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={driverAssist}
+                    onChange={(event) => setDriverAssist(event.target.checked)}
+                  />
+                  <span>Driver assist</span>
+                  <small>+$80</small>
                 </label>
               </div>
             </fieldset>

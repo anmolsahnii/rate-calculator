@@ -12,6 +12,7 @@ export type RatePrefill = {
   appointment: boolean;
   returns: boolean;
   dunnage: boolean;
+  driverAssist: boolean;
 };
 
 export function parseRatePrefill(
@@ -65,5 +66,6 @@ export function parseRatePrefill(
     appointment: enabled("appointment"),
     returns: enabled("returns"),
     dunnage: enabled("dunnage"),
+    driverAssist: enabled("driverAssist"),
   };
 }

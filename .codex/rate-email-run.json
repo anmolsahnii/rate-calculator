@@ -1,20 +1,33 @@
 {
   "automation_id": "update-rate-calculator-from-gmail-quotes",
-  "last_successful_run": "2026-08-06T15:21:12Z",
-  "review_window_start": "2026-08-05T15:01:44Z",
-  "review_window_end": "2026-08-06T15:21:12Z",
+  "last_successful_run": "2026-08-07T15:00:47Z",
+  "review_window_start": "2026-08-06T15:21:12Z",
+  "review_window_end": "2026-08-07T15:00:47Z",
   "reviewed_high_level": {
     "gmail_searches": [
       "recent logistics/rate terms across mailbox",
       "sent messages with quote/rate terms",
       "sent messages containing quoted customer price language"
     ],
-    "threads_read": 11
+    "threads_read": 12
   },
-  "normalized_facts_added": 2,
+  "normalized_facts_added": 7,
   "notes": [
-    "Stored two normalized lane, pallet/service, and price facts only.",
-    "Skipped challenged, declined, accessorial-heavy, multi-stop, or unpriced requests to avoid distorting calculator history.",
+    "Stored seven normalized lane, pallet/service, and price facts only.",
+    "Added an optional Driver assist accessorial at $80 based on clear rate-card guidance; it is off by default.",
+    "Skipped hazmat, unaccepted high-pallet FTL, helper-heavy, or accessorial-heavy lane rows where storing a simple base price would distort calculator history.",
     "No email bodies, message IDs, contact details, or raw sensitive content are stored."
-  ]
+  ],
+  "what_could_be_better": {
+    "can_do_automatically": [
+      "Keep separating accessorial-heavy quotes from base lane history unless the calculator has explicit fields for those charges.",
+      "Track exact accepted/negotiated prices for Brossard, Cornwall, Vancouver, Navan, and London-to-Whitby lanes as more repeats arrive.",
+      "Continue watching for driver-assist, helper, tailgate, appointment, and inside-delivery language because these charges move quotes materially."
+    ],
+    "needs_approval": [
+      "Confirm whether Canada Cartage Brossard LTL quotes should include tailgate by default for Uniqlo deliveries.",
+      "Confirm whether GoBolt shipments over 10 pallets should always open as FTL with the entered pallet count capped in the calculator UI.",
+      "Confirm whether hazmat/class shipments need a separate surcharge or should always stay manual."
+    ]
+  }
 }

@@ -24,6 +24,7 @@ test("parses a Gmail calculator handoff", () => {
     appointment: false,
     returns: false,
     dunnage: false,
+    driverAssist: false,
   });
 });
 
@@ -53,8 +54,12 @@ test("accepts straight truck and maps legacy auto links to LTL", () => {
 });
 
 test("parses dunnage removal from a calculator handoff", () => {
-  const prefill = parseRatePrefill("?service=ftl&dunnage=1", customers);
+  const prefill = parseRatePrefill(
+    "?service=ftl&dunnage=1&driverAssist=1",
+    customers,
+  );
 
   assert.equal(prefill?.service, "ftl");
   assert.equal(prefill?.dunnage, true);
+  assert.equal(prefill?.driverAssist, true);
 });
