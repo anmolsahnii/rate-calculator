@@ -1,5 +1,6 @@
 export type CustomerId =
   | "spot"
+  | "wheels18"
   | "canada"
   | "ccls"
   | "efl"
@@ -38,6 +39,11 @@ export const customerProfiles: Array<{
     id: "spot",
     label: "Spot",
     hint: "2026 Ontario LTL, Max 5 Ton, Montreal LTL and generic FTL rates.",
+  },
+  {
+    id: "wheels18",
+    label: "18 Wheels",
+    hint: "Mississauga outbound skid table for NS, Winnipeg, Saskatoon, Calgary-Edmonton, and Vancouver.",
   },
   {
     id: "canada",
@@ -359,6 +365,12 @@ export const rateCards: Record<CustomerId, RateCard> = {
     ftl: [250, 300, 400, 450, 550, 650, 800, 850, 1800],
     fuelMode: "add",
   },
+  wheels18: {
+    label: "18 Wheels",
+    effective: "2026",
+    sourceLabel: "18 Wheels outbound Mississauga rate card",
+    fuelMode: "included",
+  },
   canada: {
     label: "Canada Cartage",
     effective: "January 1, 2026",
@@ -445,6 +457,13 @@ export const straightTruckMax5Ton = [148, 167, 195, 195, 750, 900];
 export const palletLaneCards: Partial<
   Record<CustomerId, Record<string, number[]>>
 > = {
+  wheels18: {
+    "nova scotia": [350, 450, 600, 750, 900, 1100, 1200],
+    winnipeg: [350, 450, 600, 750, 900, 1100, 1200],
+    saskatoon: [400, 600, 800, 1000, 1300, 1500, 1700],
+    "calgary edmonton": [400, 600, 800, 1000, 1300, 1500, 1700],
+    vancouver: [450, 650, 850, 1100, 1400, 1700, 2100],
+  },
   uniqlo: {
     kitchener: [106, 130, 142, 148, 168, 186, 198, 210, 216, 222, 234, 234],
     niagara: [143, 210, 276, 342, 408, 474, 540, 606, 720, 750, 900, 400],
@@ -535,6 +554,14 @@ export const cityAliases: Record<string, string> = {
   "st. catherine": "st catharines",
   "saint catherine": "st catharines",
   "st. catharines": "st catharines",
+  ns: "nova scotia",
+  "nova scotia": "nova scotia",
+  halifax: "nova scotia",
+  "calgary-edmonton": "calgary edmonton",
+  "calgary edmontn": "calgary edmonton",
+  "calgary-edmontn": "calgary edmonton",
+  calgary: "calgary edmonton",
+  edmonton: "calgary edmonton",
 };
 
 export const destinationSuggestions = Array.from(

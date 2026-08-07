@@ -10,9 +10,11 @@ const data = {
     "oakville",
     "dorval",
     "richmond hill",
+    "vancouver",
   ],
   profiles: [
     { id: "spot", label: "Spot" },
+    { id: "wheels18", label: "18 Wheels" },
     { id: "vessi", label: "Vessi" },
     { id: "gobolt", label: "GoBolt" },
   ],
@@ -53,6 +55,23 @@ test("keeps incomplete emails in review state", () => {
   assert.equal(quote.pallets, 0);
   assert.equal(quote.originDetected, false);
   assert.equal(quote.warehouse, "mississauga");
+});
+
+test("detects 18 Wheels customer requests", () => {
+  const quote = parseQuoteEmail(
+    {
+      subject: "18 Wheels quote request",
+      sender: "Customer <customer@example.com>",
+      body: "Please quote 6 skids from Mississauga, ON to Vancouver, BC.",
+      url: "https://mail.google.com/",
+    },
+    data,
+  );
+
+  assert.equal(quote.customer, "wheels18");
+  assert.equal(quote.customerDetected, true);
+  assert.equal(quote.destination, "Vancouver");
+  assert.equal(quote.pallets, 6);
 });
 
 test("extracts a custom pickup and accessorials", () => {

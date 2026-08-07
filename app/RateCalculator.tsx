@@ -107,6 +107,7 @@ function clean(value: unknown) {
 }
 
 function cityKey(value: unknown) {
+  if (/^n\.?s\.?$/i.test(String(value ?? "").trim())) return "nova scotia";
   const raw = clean(value);
   if (raw === "montreal local" || raw === "montreal exterior") return raw;
   for (const [alias, canonical] of Object.entries(cityAliases)) {
@@ -219,6 +220,13 @@ function resolveCustomerRate(
   const destination = cityKey(destinationInput);
   const card = rateCards[customer];
   const palletTable = palletLaneCards[customer];
+
+  if (
+    customer === "wheels18" &&
+    (warehouse !== "mississauga" || service !== "ltl" || pallets > 7)
+  ) {
+    return null;
+  }
 
   if (
     warehouse === "mississauga" &&

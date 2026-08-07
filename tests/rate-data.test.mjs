@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  cityAliases,
   ftlLtlFuelDestinations,
+  palletLaneCards,
   rateCards,
   spotOntarioZones,
   straightTruckMax5Ton,
@@ -44,4 +46,28 @@ test("maps Spot GTA pickup zones from the 5 Ton sheet", () => {
   assert.equal(rateCards.spot.ltl[6][0], 142.8);
   assert.equal(straightTruckMax5Ton[4], 750);
   assert.equal(straightTruckMax5Ton[5], 900);
+});
+
+test("adds 18 Wheels Mississauga outbound pallet lanes", () => {
+  assert.equal(rateCards.wheels18.fuelMode, "included");
+  assert.deepEqual(palletLaneCards.wheels18["nova scotia"], [
+    350,
+    450,
+    600,
+    750,
+    900,
+    1100,
+    1200,
+  ]);
+  assert.deepEqual(palletLaneCards.wheels18.vancouver, [
+    450,
+    650,
+    850,
+    1100,
+    1400,
+    1700,
+    2100,
+  ]);
+  assert.equal(cityAliases["calgary-edmontn"], "calgary edmonton");
+  assert.equal(cityAliases.halifax, "nova scotia");
 });

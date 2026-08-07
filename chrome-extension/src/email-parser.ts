@@ -37,6 +37,7 @@ type ParserData = {
 };
 
 const customerKeywords: Record<string, string[]> = {
+  wheels18: ["18 wheels", "eighteen wheels"],
   canada: ["canada cartage"],
   ccls: ["ccls", "uniqlo supplies"],
   efl: ["efl global", "efl"],
