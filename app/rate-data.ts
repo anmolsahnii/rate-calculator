@@ -177,6 +177,29 @@ export const spotOntarioZones: Record<number, string[]> = {
   6: ["niagara", "st catharines"],
 };
 
+export const spotGtaPickupOrigins = [
+  "vaughan",
+  "toronto",
+  "scarborough",
+  "north york",
+  "mississauga",
+  "etobicoke",
+  "brampton",
+  "oakville",
+  "milton",
+  "georgetown",
+  "burlington",
+  "bolton",
+  "caledon",
+  "pickering",
+  "oshawa",
+  "newmarket",
+  "markham",
+  "aurora",
+  "richmond hill",
+  "whitby",
+];
+
 export const ftlZones: Record<number, string[]> = {
   1: [
     "mississauga",

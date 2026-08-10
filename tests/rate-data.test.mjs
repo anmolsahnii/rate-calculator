@@ -6,6 +6,7 @@ import {
   ftlLtlFuelDestinations,
   palletLaneCards,
   rateCards,
+  spotGtaPickupOrigins,
   spotOntarioZones,
   straightTruckMax5Ton,
 } from "../app/rate-data.ts";
@@ -47,6 +48,9 @@ test("maps Spot GTA pickup zones from the 5 Ton sheet", () => {
   assert.equal(rateCards.spot.ltl[6][0], 142.8);
   assert.equal(straightTruckMax5Ton[4], 750);
   assert.equal(straightTruckMax5Ton[5], 900);
+  assert.equal(spotGtaPickupOrigins.includes("north york"), true);
+  assert.equal(spotGtaPickupOrigins.includes("richmond hill"), true);
+  assert.equal(spotGtaPickupOrigins.includes("kitchener"), false);
 });
 
 test("adds 18 Wheels Mississauga outbound pallet lanes", () => {

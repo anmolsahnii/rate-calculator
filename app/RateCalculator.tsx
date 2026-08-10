@@ -18,6 +18,7 @@ import {
   ontarioZones,
   palletLaneCards,
   rateCards,
+  spotGtaPickupOrigins,
   spotOntarioZones,
   straightTruckMax5Ton,
   vessiReturnLaneCards,
@@ -123,6 +124,14 @@ function zoneFor(city: string, zones: Record<number, string[]>) {
     }
   }
   return null;
+}
+
+function isSpotGtaPickup(value: string) {
+  if (clean(value) === "gta") return true;
+  const pickup = cityKey(value);
+  return spotGtaPickupOrigins.some(
+    (origin) => clean(origin) === clean(pickup),
+  );
 }
 
 function rateIndex(pallets: number, max: number) {
@@ -660,16 +669,20 @@ export function RateCalculator() {
   const originReady =
     originMode === "warehouse" || Boolean(pickupCity.trim());
   const loadReady = pallets > 0 || mode !== "ltl";
-  const effectiveWarehouse: WarehouseId | null =
-    originMode === "warehouse"
-      ? warehouse
-      : cityKey(pickupCity) === "mississauga"
-        ? "mississauga"
-        : ["montreal", "dorval", "lachine", "saint-laurent"].includes(
-              cityKey(pickupCity),
-            )
-          ? "montreal"
-          : null;
+  const pickupKey = cityKey(pickupCity);
+  let effectiveWarehouse: WarehouseId | null = null;
+  if (originMode === "warehouse") {
+    effectiveWarehouse = warehouse;
+  } else if (
+    pickupKey === "mississauga" ||
+    (customer === "spot" && isSpotGtaPickup(pickupCity))
+  ) {
+    effectiveWarehouse = "mississauga";
+  } else if (
+    ["montreal", "dorval", "lachine", "saint-laurent"].includes(pickupKey)
+  ) {
+    effectiveWarehouse = "montreal";
+  }
 
   const refreshFuel = async () => {
     setFuel((current) => ({ ...current, status: "checking" }));
