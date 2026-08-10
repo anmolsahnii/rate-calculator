@@ -50,6 +50,21 @@ const customerKeywords: Record<string, string[]> = {
   vessi: ["vessi"],
 };
 
+const numberWords: Record<string, number> = {
+  one: 1,
+  two: 2,
+  three: 3,
+  four: 4,
+  five: 5,
+  six: 6,
+  seven: 7,
+  eight: 8,
+  nine: 9,
+  ten: 10,
+  eleven: 11,
+  twelve: 12,
+};
+
 function normalized(value: string) {
   return value
     .toLowerCase()
@@ -113,16 +128,56 @@ function warehouseFor(city: string) {
   return null;
 }
 
+function palletCount(value: string) {
+  const wordValue = numberWords[value.toLowerCase()];
+  const count = wordValue ?? Number(value);
+  return Number.isFinite(count) && count > 0
+    ? Math.min(12, Math.floor(count))
+    : 0;
+}
+
+function detectPallets(text: string) {
+  const countToken =
+    String.raw`\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve`;
+  const explicit =
+    text.match(
+      new RegExp(
+        String.raw`\b(${countToken})\s*(?:skids?|pallets?|plts?)\b`,
+        "i",
+      ),
+    ) ??
+    text.match(
+      new RegExp(
+        String.raw`\b(?:skids?|pallets?|plts?)\s*[:#-]?\s*(${countToken})\b`,
+        "i",
+      ),
+    );
+  if (explicit) return palletCount(explicit[1]);
+
+  if (
+    /\b(?:single|one|1|a|an)\s+(?:standard\s+)?(?:skid|pallet|plt)\b/i.test(
+      text,
+    ) ||
+    /\b(?:on|onto|with|as|is|it is|it's)\s+(?:a\s+|an\s+)?(?:standard\s+)?(?:skid|pallet|plt)\b/i.test(
+      text,
+    ) ||
+    /\b(?:standard\s+)?(?:skid|pallet|plt)\b(?!\s*(?:counts?|dimensions?|dims?|spots?|positions?|jack|returns?|rates?|pricing|agreement))/i.test(
+      text,
+    )
+  ) {
+    return 1;
+  }
+
+  return 0;
+}
+
 export function parseQuoteEmail(
   payload: EmailPayload,
   data: ParserData,
 ): ParsedQuote {
   const messageText = `${payload.subject}\n${payload.body}`;
   const allText = `${payload.sender}\n${messageText}`;
-  const palletMatch =
-    messageText.match(/\b(\d{1,2})\s*(?:skids?|pallets?|plts?)\b/i) ??
-    messageText.match(/\b(?:skids?|pallets?|plts?)\s*[:#-]?\s*(\d{1,2})\b/i);
-  const pallets = palletMatch ? Math.min(12, Number(palletMatch[1])) : 0;
+  const pallets = detectPallets(messageText);
 
   const routeMatch = messageText.match(
     /\bfrom\s+([^\n\r;]{2,90}?)\s+\bto\s+([^\n\r;]{2,90}?)(?=[\n\r;.]|$)/i,

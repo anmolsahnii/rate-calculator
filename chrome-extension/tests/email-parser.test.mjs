@@ -7,6 +7,8 @@ const data = {
     "mississauga",
     "montreal",
     "brampton",
+    "north york",
+    "ottawa",
     "oakville",
     "dorval",
     "richmond hill",
@@ -55,6 +57,46 @@ test("keeps incomplete emails in review state", () => {
   assert.equal(quote.pallets, 0);
   assert.equal(quote.originDetected, false);
   assert.equal(quote.warehouse, "mississauga");
+});
+
+test("infers one pallet from a standard skid Spot request", () => {
+  const quote = parseQuoteEmail(
+    {
+      subject: "Load #3409600 North York to Ottawa",
+      sender: "Customer <customer@example.com>",
+      body: [
+        "Pickup: North York, ON",
+        "Delivery: Ottawa, ON",
+        "It is 1 panel on standard skid.",
+        "Need liftgate at delivery.",
+      ].join("\n"),
+      url: "https://mail.google.com/",
+    },
+    data,
+  );
+
+  assert.equal(quote.customer, "spot");
+  assert.equal(quote.pickup, "North York");
+  assert.equal(quote.destination, "Ottawa");
+  assert.equal(quote.pallets, 1);
+  assert.equal(quote.palletsDetected, true);
+  assert.equal(quote.tailgate, true);
+});
+
+test("does not infer pallets from pallet-jack or rate-card text", () => {
+  const quote = parseQuoteEmail(
+    {
+      subject: "Pallet Rates",
+      sender: "Customer <customer@example.com>",
+      body: "Can you quote delivery to Oakville? Need pallet jack only.",
+      url: "https://mail.google.com/",
+    },
+    data,
+  );
+
+  assert.equal(quote.destination, "Oakville");
+  assert.equal(quote.pallets, 0);
+  assert.equal(quote.palletsDetected, false);
 });
 
 test("detects 18 Wheels customer requests", () => {
