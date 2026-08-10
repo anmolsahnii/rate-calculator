@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   cityAliases,
+  destinationSuggestions,
   ftlLtlFuelDestinations,
   palletLaneCards,
   rateCards,
@@ -70,4 +71,6 @@ test("adds 18 Wheels Mississauga outbound pallet lanes", () => {
   ]);
   assert.equal(cityAliases["calgary-edmontn"], "calgary edmonton");
   assert.equal(cityAliases.halifax, "nova scotia");
+  assert.equal(destinationSuggestions.includes("Nova Scotia"), true);
+  assert.equal(destinationSuggestions.includes("nova scotia"), false);
 });

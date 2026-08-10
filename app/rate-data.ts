@@ -43,7 +43,7 @@ export const customerProfiles: Array<{
   {
     id: "wheels18",
     label: "18 Wheels",
-    hint: "Mississauga outbound skid table for NS, Winnipeg, Saskatoon, Calgary-Edmonton, and Vancouver.",
+    hint: "Mississauga outbound skid table for Nova Scotia, Winnipeg, Saskatoon, Calgary-Edmonton, and Vancouver.",
   },
   {
     id: "canada",
@@ -564,6 +564,10 @@ export const cityAliases: Record<string, string> = {
   edmonton: "calgary edmonton",
 };
 
+const destinationDisplayNames: Record<string, string> = {
+  "nova scotia": "Nova Scotia",
+};
+
 export const destinationSuggestions = Array.from(
   new Set([
     "Montreal Local",
@@ -575,5 +579,5 @@ export const destinationSuggestions = Array.from(
     ...montrealExterior,
     ...Object.values(palletLaneCards).flatMap((card) => Object.keys(card)),
     ...Object.values(cclsQuebecZones).flat(),
-  ]),
+  ].map((destination) => destinationDisplayNames[destination] ?? destination)),
 ).sort((a, b) => a.localeCompare(b));
