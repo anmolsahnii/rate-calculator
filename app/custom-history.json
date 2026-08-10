@@ -1,6 +1,26 @@
 [
   {
     "date": "2026-08-07",
+    "customer": "Canada Cartage / Uniqlo",
+    "origin": "Mississauga",
+    "destination": "Richmond Hill",
+    "skids": 3,
+    "service": "Straight truck",
+    "price": 295,
+    "kind": "confirmed"
+  },
+  {
+    "date": "2026-08-07",
+    "customer": "Hellmann",
+    "origin": "Niagara Falls",
+    "destination": "Puslinch",
+    "skids": 9,
+    "service": "LTL",
+    "price": 1140,
+    "kind": "confirmed"
+  },
+  {
+    "date": "2026-08-07",
     "customer": "Canada Cartage",
     "origin": "Mississauga",
     "destination": "Brossard",
