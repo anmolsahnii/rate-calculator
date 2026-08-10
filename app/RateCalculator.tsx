@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import customHistory from "./custom-history.json";
 import historyData from "./history-data.json";
 import { parseRatePrefill } from "./rate-prefill";
+import { cityKey, clean, isSpotGtaPickup, zoneFor } from "./rate-matching";
 import {
   cclsQuebecRates,
   cclsQuebecZones,
-  cityAliases,
   customerProfiles,
   destinationSuggestions,
   ftlLtlFuelDestinations,
@@ -18,7 +18,6 @@ import {
   ontarioZones,
   palletLaneCards,
   rateCards,
-  spotGtaPickupOrigins,
   spotOntarioZones,
   straightTruckMax5Ton,
   vessiReturnLaneCards,
@@ -95,44 +94,6 @@ const defaultAccessorials: Record<AccessorialKey, number> = {
   dunnage: 45,
   driverAssist: 80,
 };
-
-function clean(value: unknown) {
-  return String(value ?? "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\b(on|qc|pq|ab|bc|mb|sk|ns|nb)\b/g, " ")
-    .replace(/[^a-z0-9'-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function cityKey(value: unknown) {
-  if (/^n\.?s\.?$/i.test(String(value ?? "").trim())) return "nova scotia";
-  const raw = clean(value);
-  if (raw === "montreal local" || raw === "montreal exterior") return raw;
-  for (const [alias, canonical] of Object.entries(cityAliases)) {
-    if (raw === clean(alias) || raw.includes(clean(alias))) return canonical;
-  }
-  return raw;
-}
-
-function zoneFor(city: string, zones: Record<number, string[]>) {
-  for (const [zone, cities] of Object.entries(zones)) {
-    if (cities.some((candidate) => clean(candidate) === clean(city))) {
-      return Number(zone);
-    }
-  }
-  return null;
-}
-
-function isSpotGtaPickup(value: string) {
-  if (clean(value) === "gta") return true;
-  const pickup = cityKey(value);
-  return spotGtaPickupOrigins.some(
-    (origin) => clean(origin) === clean(pickup),
-  );
-}
 
 function rateIndex(pallets: number, max: number) {
   const count = Math.max(1, pallets || 1);
@@ -717,33 +678,37 @@ export function RateCalculator() {
   }, []);
 
   useEffect(() => {
-    const prefill = parseRatePrefill(
-      window.location.search,
-      customerProfiles.map((profile) => profile.id),
-    );
-    if (!prefill) return;
+    const prefillTimer = window.setTimeout(() => {
+      const prefill = parseRatePrefill(
+        window.location.search,
+        customerProfiles.map((profile) => profile.id),
+      );
+      if (!prefill) return;
 
-    if (prefill.pickup) {
-      setOriginMode("custom");
-      setPickupCity(prefill.pickup);
-    } else if (prefill.warehouse) {
-      setOriginMode("warehouse");
-      setWarehouse(prefill.warehouse);
-    }
+      if (prefill.pickup) {
+        setOriginMode("custom");
+        setPickupCity(prefill.pickup);
+      } else if (prefill.warehouse) {
+        setOriginMode("warehouse");
+        setWarehouse(prefill.warehouse);
+      }
 
-    if (prefill.destination) setDestination(prefill.destination);
-    if (prefill.customer) setCustomer(prefill.customer as CustomerId);
-    if (prefill.service) setService(prefill.service);
-    if (prefill.pallets !== null) setPallets(prefill.pallets);
-    if (prefill.helpers !== null) setHelpers(prefill.helpers);
-    if (prefill.market !== null) setMarket(prefill.market);
+      if (prefill.destination) setDestination(prefill.destination);
+      if (prefill.customer) setCustomer(prefill.customer as CustomerId);
+      if (prefill.service) setService(prefill.service);
+      if (prefill.pallets !== null) setPallets(prefill.pallets);
+      if (prefill.helpers !== null) setHelpers(prefill.helpers);
+      if (prefill.market !== null) setMarket(prefill.market);
 
-    setTailgate(prefill.tailgate);
-    setInside(prefill.inside);
-    setAppointment(prefill.appointment);
-    setReturns(prefill.returns);
-    setDunnage(prefill.dunnage);
-    setDriverAssist(prefill.driverAssist);
+      setTailgate(prefill.tailgate);
+      setInside(prefill.inside);
+      setAppointment(prefill.appointment);
+      setReturns(prefill.returns);
+      setDunnage(prefill.dunnage);
+      setDriverAssist(prefill.driverAssist);
+    }, 0);
+
+    return () => window.clearTimeout(prefillTimer);
   }, []);
 
   const matches = (() => {
