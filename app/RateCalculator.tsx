@@ -3,6 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import customHistory from "./custom-history.json";
 import historyData from "./history-data.json";
+import {
+  estimatePalletSpots,
+  formatEstimateNumber,
+} from "./pallet-spots";
 import { parseRatePrefill } from "./rate-prefill";
 import { cityKey, clean, isSpotGtaPickup, zoneFor } from "./rate-matching";
 import {
@@ -971,12 +975,8 @@ function clampBulkPallets(value: number) {
 
 function parsePalletCount(text: string, fallback: number, forced: number | null) {
   if (forced !== null) return clampBulkPallets(forced);
-  const palletMatch = text.match(
-    /(\d+(?:\.\d+)?)\s*(?:pallet\s*spots?|spots?|skids?|pallets?)\b/i,
-  );
-  if (palletMatch) return clampBulkPallets(Number(palletMatch[1]));
-  const feetMatch = text.match(/\b(\d+(?:\.\d+)?)\s*ft\b/i);
-  if (feetMatch) return clampBulkPallets(Number(feetMatch[1]) / 2);
+  const estimate = estimatePalletSpots(text);
+  if (estimate) return clampBulkPallets(estimate.palletSpots);
   return clampBulkPallets(fallback || 1);
 }
 
@@ -1113,6 +1113,7 @@ export function RateCalculator() {
   const [market, setMarket] = useState(10);
   const [fscOverride, setFscOverride] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+  const [spotCalculatorInput, setSpotCalculatorInput] = useState("");
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkInput, setBulkInput] = useState("");
   const [bulkCopied, setBulkCopied] = useState(false);
@@ -1145,6 +1146,7 @@ export function RateCalculator() {
     dunnage,
     driverAssist,
   };
+  const spotEstimate = estimatePalletSpots(spotCalculatorInput);
 
   const refreshFuel = async () => {
     setFuel((current) => ({ ...current, status: "checking" }));
@@ -1294,12 +1296,19 @@ export function RateCalculator() {
     setHelpers(0);
     setMarket(10);
     setFscOverride(null);
+    setSpotCalculatorInput("");
     setBulkOpen(false);
     setBulkInput("");
   };
 
   const showResults = () => {
     resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const updateSpotCalculator = (value: string) => {
+    setSpotCalculatorInput(value);
+    const estimate = estimatePalletSpots(value);
+    if (estimate) setPallets(estimate.palletSpots);
   };
 
   const toggleBulkMode = () => {
@@ -1522,6 +1531,34 @@ export function RateCalculator() {
                 </div>
               </label>
             </div>
+
+            <label className="field spot-calculator">
+              <span>Pallet spot calculator</span>
+              <input
+                type="text"
+                placeholder="51 x 36 x 37 or 12 ft"
+                value={spotCalculatorInput}
+                onChange={(event) => updateSpotCalculator(event.target.value)}
+              />
+              {spotEstimate ? (
+                <div className="spot-estimate-grid" aria-live="polite">
+                  <span>
+                    <strong>{formatEstimateNumber(spotEstimate.skidCount)}</strong>
+                    Skids
+                  </span>
+                  <span>
+                    <strong>{formatEstimateNumber(spotEstimate.palletSpots)}</strong>
+                    Pallet spots
+                  </span>
+                  <span>
+                    <strong>{formatEstimateNumber(spotEstimate.linearFeet)}</strong>
+                    Linear ft
+                  </span>
+                </div>
+              ) : (
+                <small>{spotCalculatorInput ? "Enter dimensions or linear feet" : "Optional"}</small>
+              )}
+            </label>
 
             <label className="field">
               <span>Destination</span>

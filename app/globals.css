@@ -357,6 +357,46 @@ button:disabled {
   appearance: none;
 }
 
+.spot-calculator {
+  padding: 12px;
+  border: 1px solid #d8dedb;
+  border-radius: 6px;
+  background: #f8faf9;
+}
+
+.spot-calculator small {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.spot-estimate-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.spot-estimate-grid span {
+  min-height: 54px;
+  padding: 9px;
+  border: 1px solid #e1e7e4;
+  border-radius: 5px;
+  background: white;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.spot-estimate-grid strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--forest);
+  font-size: 18px;
+  line-height: 1;
+}
+
 .segmented-control {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
