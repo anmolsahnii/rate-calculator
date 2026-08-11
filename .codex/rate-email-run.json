@@ -1,33 +1,36 @@
 {
   "automation_id": "update-rate-calculator-from-gmail-quotes",
-  "last_successful_run": "2026-08-07T15:00:47Z",
-  "review_window_start": "2026-08-06T15:21:12Z",
-  "review_window_end": "2026-08-07T15:00:47Z",
+  "last_successful_run": "2026-08-11T15:01:00Z",
+  "review_window_start": "2026-08-07T15:00:47Z",
+  "review_window_end": "2026-08-11T15:01:00Z",
   "reviewed_high_level": {
     "gmail_searches": [
-      "recent logistics/rate terms across mailbox",
-      "sent messages with quote/rate terms",
-      "sent messages containing quoted customer price language"
+      "recent logistics and rate terms across all mail since the last run",
+      "sent quote language with all-in prices",
+      "rate confirmations and shipment updates with pallet or skid details",
+      "customer-specific lane terms for Canada Cartage, Radiant, Farm Boy, Hellmann, and Nippon"
     ],
-    "threads_read": 12
+    "threads_read": 9
   },
-  "normalized_facts_added": 7,
+  "normalized_facts_added": 11,
   "notes": [
-    "Stored seven normalized lane, pallet/service, and price facts only.",
-    "Added an optional Driver assist accessorial at $80 based on clear rate-card guidance; it is off by default.",
-    "Skipped hazmat, unaccepted high-pallet FTL, helper-heavy, or accessorial-heavy lane rows where storing a simple base price would distort calculator history.",
+    "Stored eleven normalized lane, pallet/service, and price facts only.",
+    "Added unique city-level Welland-to-Farm-Boy quote evidence once per destination city to avoid overweighting repeated stores in the same quote batch.",
+    "Added the weekly Markham-to-Mississauga FTL rate confirmation using zero skids so the existing FTL matching rule is preserved.",
+    "Added clear Mississauga local-transfer and Nippon Waterloo-to-Alliston LTL evidence.",
+    "Skipped Montreal inside/early-delivery, Ottawa inside/appointment, Brossard accessorial-heavy, and unaccepted 11-skid Markham follow-up pricing because those would distort base history without explicit accessorial modeling.",
     "No email bodies, message IDs, contact details, or raw sensitive content are stored."
   ],
   "what_could_be_better": {
     "can_do_automatically": [
-      "Keep separating accessorial-heavy quotes from base lane history unless the calculator has explicit fields for those charges.",
-      "Track exact accepted/negotiated prices for Brossard, Cornwall, Vancouver, Navan, and London-to-Whitby lanes as more repeats arrive.",
-      "Continue watching for driver-assist, helper, tailgate, appointment, and inside-delivery language because these charges move quotes materially."
+      "Continue de-duplicating same-batch quote tables into one city-level lane per price so a single bulk quote does not dominate the median.",
+      "Keep accessorial-heavy or timed-delivery quotes out of base history until the calculator has separate fields for those conditions.",
+      "Watch for repeats on the weekly Markham FTL and Farm Boy Welland lanes; after several confirmations they can become proper rate-card rows instead of only history evidence."
     ],
     "needs_approval": [
-      "Confirm whether Canada Cartage Brossard LTL quotes should include tailgate by default for Uniqlo deliveries.",
-      "Confirm whether GoBolt shipments over 10 pallets should always open as FTL with the entered pallet count capped in the calculator UI.",
-      "Confirm whether hazmat/class shipments need a separate surcharge or should always stay manual."
+      "Confirm whether Montreal local inside or timed retail deliveries should get a separate surcharge/rule based on the $395 JD Sports quote.",
+      "Confirm whether Farm Boy / Radiant Welland should become its own customer profile or pickup-origin shortcut.",
+      "Confirm whether Canada Cartage / Uniqlo accessorial-inclusive quotes should be stored in a separate accessorial history instead of skipped or mixed into base history."
     ]
   }
 }
