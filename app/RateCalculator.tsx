@@ -1231,7 +1231,9 @@ export function RateCalculator() {
   const bulkOpen = workspaceMode === "bulk";
   const spotMode = workspaceMode === "spots";
   const historyMode = workspaceMode === "history";
-  const spotEstimate = estimatePalletSpots(spotCalculatorInput);
+  const spotEstimate = estimatePalletSpots(spotCalculatorInput, {
+    bareNumberAsLinearFeet: true,
+  });
 
   const refreshFuel = async () => {
     setFuel((current) => ({ ...current, status: "checking" }));
@@ -1438,7 +1440,9 @@ export function RateCalculator() {
 
   const updateSpotCalculator = (value: string) => {
     setSpotCalculatorInput(value);
-    const estimate = estimatePalletSpots(value);
+    const estimate = estimatePalletSpots(value, {
+      bareNumberAsLinearFeet: true,
+    });
     if (estimate) setPallets(estimate.palletSpots);
   };
 
@@ -1716,34 +1720,6 @@ export function RateCalculator() {
                 </div>
               </label>
             </div>
-
-            <label className="field spot-calculator">
-              <span>Pallet spot calculator</span>
-              <input
-                type="text"
-                placeholder="51 x 36 x 37 or 12 ft"
-                value={spotCalculatorInput}
-                onChange={(event) => updateSpotCalculator(event.target.value)}
-              />
-              {spotEstimate ? (
-                <div className="spot-estimate-grid" aria-live="polite">
-                  <span>
-                    <strong>{formatEstimateNumber(spotEstimate.skidCount)}</strong>
-                    Skids
-                  </span>
-                  <span>
-                    <strong>{formatEstimateNumber(spotEstimate.palletSpots)}</strong>
-                    Pallet spots
-                  </span>
-                  <span>
-                    <strong>{formatEstimateNumber(spotEstimate.linearFeet)}</strong>
-                    Linear ft
-                  </span>
-                </div>
-              ) : (
-                <small>{spotCalculatorInput ? "Enter dimensions or linear feet" : "Optional"}</small>
-              )}
-            </label>
 
             <label className="field">
               <span>Destination</span>
@@ -2080,11 +2056,11 @@ export function RateCalculator() {
             >
               <div className="section-title">
                 <h3>Pallet spot calculator</h3>
-                <span>Dimensions to quote load</span>
+                <span>Dimensions or linear ft</span>
               </div>
               <input
                 type="text"
-                placeholder="51 x 36 x 37 or 12 ft"
+                placeholder="51 x 36 x 37, 51, 36, 37, 12 ft, or 12"
                 value={spotCalculatorInput}
                 onChange={(event) => updateSpotCalculator(event.target.value)}
                 aria-label="Pallet spot dimensions or linear feet"
@@ -2092,12 +2068,6 @@ export function RateCalculator() {
               {spotEstimate ? (
                 <>
                   <div className="spot-estimate-grid wide">
-                    <span>
-                      <strong>
-                        {formatEstimateNumber(spotEstimate.skidCount)}
-                      </strong>
-                      Skids
-                    </span>
                     <span>
                       <strong>
                         {formatEstimateNumber(spotEstimate.palletSpots)}
@@ -2111,10 +2081,9 @@ export function RateCalculator() {
                       Linear ft
                     </span>
                   </div>
-                  <p>{spotEstimate.detail} has been applied to the load.</p>
                 </>
               ) : (
-                <p>Enter dimensions or linear feet to calculate the load.</p>
+                <p>Enter dimensions with x or commas, or type a number for linear feet.</p>
               )}
             </section>
           )}

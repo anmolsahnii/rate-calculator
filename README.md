@@ -12,7 +12,7 @@ warehouses.
 - Larger customer-ready quote card with confidence, fuel, basis, extras, and copy action
 - City spelling cleanup suggestions for likely typos
 - Mobile step progress for lane, load, service, and price
-- Pallet spot calculator from dimensions such as `51 x 36 x 37` or linear feet
+- Pallet spot mode for dimensions such as `51 x 36 x 37`, comma-separated dimensions, or plain-number linear feet
 - APPS fuel surcharge lookup with saved fallback values
 - LTL fuel treatment for the configured Ontario FTL destinations
 - Helper, accessorial, and market-adjustment controls

@@ -16,6 +16,14 @@ test("estimates pallet spots from dimensions", () => {
   assert.equal(formatEstimateNumber(estimate?.linearFeet ?? 0), "4");
 });
 
+test("estimates pallet spots from comma separated dimensions", () => {
+  const estimate = estimatePalletSpots("51, 36, 37");
+
+  assert.equal(estimate?.source, "dimensions");
+  assert.equal(estimate?.palletSpots, 2);
+  assert.equal(formatEstimateNumber(estimate?.linearFeet ?? 0), "4");
+});
+
 test("estimates pallet spots from linear feet", () => {
   const estimate = estimatePalletSpots("7 linear ft");
 
@@ -23,6 +31,18 @@ test("estimates pallet spots from linear feet", () => {
   assert.equal(estimate?.palletSpots, 3.5);
   assert.equal(estimate?.skidCount, 4);
   assert.equal(estimate?.linearFeet, 7);
+});
+
+test("uses plain numbers as linear feet only when requested", () => {
+  assert.equal(estimatePalletSpots("12"), null);
+
+  const estimate = estimatePalletSpots("12", {
+    bareNumberAsLinearFeet: true,
+  });
+
+  assert.equal(estimate?.source, "linear-feet");
+  assert.equal(estimate?.palletSpots, 6);
+  assert.equal(estimate?.linearFeet, 12);
 });
 
 test("keeps direct pallet spots usable", () => {

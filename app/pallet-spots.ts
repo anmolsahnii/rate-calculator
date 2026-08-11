@@ -8,6 +8,10 @@ export type PalletSpotEstimate = {
   detail: string;
 };
 
+type PalletSpotEstimateOptions = {
+  bareNumberAsLinearFeet?: boolean;
+};
+
 const MAX_PALLET_SPOTS = 60;
 const STANDARD_PALLET_LENGTH_IN = 48;
 const STANDARD_PALLET_WIDTH_IN = 40;
@@ -42,7 +46,7 @@ function countFromText(input: string) {
 
 function estimateFromDimensions(input: string): PalletSpotEstimate | null {
   const dimensionMatch = input.match(
-    /\b(\d+(?:\.\d+)?)\s*(?:in(?:ches)?\.?|ft|feet|foot|")?\s*[xX]\s*(\d+(?:\.\d+)?)\s*(?:in(?:ches)?\.?|ft|feet|foot|")?(?:\s*[xX]\s*(\d+(?:\.\d+)?)\s*(?:in(?:ches)?\.?|ft|feet|foot|")?)?/i,
+    /\b(\d+(?:\.\d+)?)\s*(?:in(?:ches)?\.?|ft|feet|foot|")?\s*(?:[xX]|,)\s*(\d+(?:\.\d+)?)\s*(?:in(?:ches)?\.?|ft|feet|foot|")?(?:\s*(?:[xX]|,)\s*(\d+(?:\.\d+)?)\s*(?:in(?:ches)?\.?|ft|feet|foot|")?)?/i,
   );
   if (!dimensionMatch) return null;
 
@@ -99,6 +103,27 @@ function estimateFromLinearFeet(input: string): PalletSpotEstimate | null {
   };
 }
 
+function estimateFromBareLinearFeet(input: string): PalletSpotEstimate | null {
+  const bareMatch = input.match(/^\s*(\d+(?:\.\d+)?)\s*$/);
+  if (!bareMatch) return null;
+
+  const requestedFeet = Number(bareMatch[1]);
+  if (!Number.isFinite(requestedFeet) || requestedFeet <= 0) return null;
+
+  const palletSpots = clampPalletSpots(
+    requestedFeet / LINEAR_FEET_PER_PALLET_SPOT,
+  );
+  const linearFeet = roundTenths(palletSpots * LINEAR_FEET_PER_PALLET_SPOT);
+
+  return {
+    source: "linear-feet",
+    skidCount: Math.ceil(palletSpots),
+    palletSpots,
+    linearFeet,
+    detail: `${formatEstimateNumber(linearFeet)} linear ft`,
+  };
+}
+
 function estimateFromSpots(input: string): PalletSpotEstimate | null {
   const spotMatch = input.match(
     /\b(\d+(?:\.\d+)?)\s*(?:pallet\s*spots?|spots?|skids?|pallets?)\b/i,
@@ -117,12 +142,18 @@ function estimateFromSpots(input: string): PalletSpotEstimate | null {
   };
 }
 
-export function estimatePalletSpots(input: string): PalletSpotEstimate | null {
+export function estimatePalletSpots(
+  input: string,
+  options: PalletSpotEstimateOptions = {},
+): PalletSpotEstimate | null {
   const trimmed = input.trim();
   if (!trimmed) return null;
   return (
     estimateFromDimensions(trimmed) ??
     estimateFromLinearFeet(trimmed) ??
+    (options.bareNumberAsLinearFeet
+      ? estimateFromBareLinearFeet(trimmed)
+      : null) ??
     estimateFromSpots(trimmed)
   );
 }

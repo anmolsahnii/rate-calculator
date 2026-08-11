@@ -415,20 +415,6 @@ button:disabled {
   appearance: none;
 }
 
-.spot-calculator {
-  padding: 12px;
-  border: 1px solid #d8dedb;
-  border-radius: 6px;
-  background: #f8faf9;
-}
-
-.spot-calculator small {
-  display: block;
-  margin-top: 8px;
-  color: var(--muted);
-  font-size: 12px;
-}
-
 .spot-estimate-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -456,7 +442,7 @@ button:disabled {
 }
 
 .spot-estimate-grid.wide {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .spot-estimate-grid.wide span {

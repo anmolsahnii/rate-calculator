@@ -27,8 +27,9 @@ test("exports the rate calculator for GitHub Pages", async () => {
   assert.match(html, /quote-hero-card/);
   assert.match(html, /Suggested quote today/);
   assert.match(html, /Pallet spots/);
-  assert.match(html, /Pallet spot calculator/);
-  assert.match(html, /51 x 36 x 37 or 12 ft/);
+  assert.doesNotMatch(html, /Pallet spot calculator/);
+  assert.doesNotMatch(html, /51 x 36 x 37, 51, 36, 37, 12 ft, or 12/);
+  assert.doesNotMatch(html, /spot-calculator/);
   assert.match(html, /Bulk quote/);
   assert.match(html, /confidence-badge/);
   assert.match(html, /Rate evidence and data notes/);
