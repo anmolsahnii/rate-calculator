@@ -6,6 +6,7 @@ import historyData from "./history-data.json";
 import { parseRatePrefill } from "./rate-prefill";
 import { cityKey, clean, isSpotGtaPickup, zoneFor } from "./rate-matching";
 import {
+  cityAliases,
   cclsQuebecRates,
   cclsQuebecZones,
   customerProfiles,
@@ -65,6 +66,49 @@ type FuelSchedule = {
   status: "checking" | "live" | "saved";
 };
 
+type ConfidenceLevel = "high" | "medium" | "review" | "manual" | "waiting";
+
+type QuoteConfidence = {
+  level: ConfidenceLevel;
+  label: string;
+  detail: string;
+};
+
+type HistoryMatch = {
+  record: HistoryRecord;
+  score: number;
+};
+
+type SelectedAccessorials = Record<AccessorialKey, boolean>;
+
+type CalculatedQuote = {
+  rate: RateResolution | null;
+  matches: HistoryMatch[];
+  historyMedian: number | null;
+  accessorials: number;
+  helperCharge: number;
+  fuelCharge: number;
+  tariffTotal: number | null;
+  suggested: number | null;
+  low: number | null;
+  high: number | null;
+  confidence: QuoteConfidence;
+};
+
+type BulkQuoteInput = {
+  line: number;
+  load: string;
+  store: string;
+  destination: string;
+  pallets: number;
+  raw: string;
+};
+
+type BulkQuoteResult = BulkQuoteInput & {
+  quote: CalculatedQuote;
+  normalizedDestination: string;
+};
+
 const allHistory = [
   ...(historyData as HistoryRecord[]),
   ...(customHistory as HistoryRecord[]),
@@ -96,7 +140,7 @@ const defaultAccessorials: Record<AccessorialKey, number> = {
 };
 
 function rateIndex(pallets: number, max: number) {
-  const count = Math.max(1, pallets || 1);
+  const count = Math.max(1, Math.ceil(pallets || 1));
   if (count >= max) return max - 1;
   return Math.min(count - 1, max - 1);
 }
@@ -592,6 +636,465 @@ function resolveCustomPickupRate(
   return null;
 }
 
+function cityDisplayName(value: unknown) {
+  const key = cityKey(value);
+  const special: Record<string, string> = {
+    "nova scotia": "Nova Scotia",
+    "calgary edmonton": "Calgary-Edmonton",
+    "quebec city": "Quebec City",
+    "saint-laurent": "Saint-Laurent",
+    "saint-bruno": "Saint-Bruno",
+    "trois-rivieres": "Trois-Rivieres",
+    "riviere-du-loup": "Riviere-du-Loup",
+    "niagara-on-the-lake": "Niagara-on-the-Lake",
+    "montreal local": "Montreal Local",
+    "montreal exterior": "Montreal Exterior",
+  };
+  if (special[key]) return special[key];
+  return key
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+const citySearchTerms = Array.from(
+  new Set([
+    ...destinationSuggestions,
+    ...Object.keys(cityAliases),
+    ...Object.values(cityAliases),
+    ...Object.values(spotOntarioZones).flat(),
+    ...Object.values(ontarioZones).flat(),
+    ...Object.values(ftlZones).flat(),
+    ...montrealLocal,
+    ...montrealExterior,
+    ...Object.values(palletLaneCards).flatMap((card) => Object.keys(card)),
+  ]),
+)
+  .map((term) => ({
+    search: clean(term),
+    key: cityKey(term),
+  }))
+  .filter((term) => term.search.length >= 3)
+  .sort((a, b) => b.search.length - a.search.length);
+
+function cityFromText(value: string) {
+  const raw = clean(value);
+  if (!raw) return "";
+  const exact = cityKey(value);
+  if (exact && exact !== raw) return exact;
+  const match = citySearchTerms.find(
+    (term) => raw === term.search || raw.includes(term.search),
+  );
+  return match?.key ?? exact;
+}
+
+function effectiveWarehouseFor(
+  originMode: OriginMode,
+  warehouse: WarehouseId,
+  pickupCity: string,
+  customer: CustomerId,
+) {
+  const pickupKey = cityKey(pickupCity);
+  if (originMode === "warehouse") return warehouse;
+  if (
+    pickupKey === "mississauga" ||
+    (customer === "spot" && isSpotGtaPickup(pickupCity))
+  ) {
+    return "mississauga";
+  }
+  if (["montreal", "dorval", "lachine", "saint-laurent"].includes(pickupKey)) {
+    return "montreal";
+  }
+  return null;
+}
+
+function findHistoryMatches(
+  originMode: OriginMode,
+  warehouse: WarehouseId,
+  pickupCity: string,
+  customer: CustomerId,
+  activeProfileLabel: string,
+  destination: string,
+  pallets: number,
+  mode: ServiceMode,
+): HistoryMatch[] {
+  if (!destination) return [];
+  const destinationKey = cityKey(destination);
+  const pickupKey = cityKey(pickupCity);
+  const selectedCustomer = clean(activeProfileLabel);
+  return allHistory
+    .filter((record) => {
+      const sameLane =
+        (originMode === "warehouse"
+          ? historyOriginKey(record.origin) === warehouse
+          : cityKey(record.origin) === pickupKey) &&
+        cityKey(record.destination) === destinationKey;
+      if (!sameLane) return false;
+      if (customer === "spot") return true;
+      const recordCustomer = clean(record.customer);
+      return (
+        recordCustomer.includes(selectedCustomer) ||
+        selectedCustomer.includes(recordCustomer)
+      );
+    })
+    .map((record) => {
+      const skidDistance = record.skids ? Math.abs(record.skids - pallets) : 20;
+      const servicePenalty =
+        mode === "ftl"
+          ? record.service === "FTL"
+            ? 0
+            : 8
+          : record.service === "FTL"
+            ? 8
+            : 0;
+      return { record, score: skidDistance + servicePenalty };
+    })
+    .sort(
+      (a, b) => a.score - b.score || b.record.date.localeCompare(a.record.date),
+    )
+    .slice(0, 8);
+}
+
+function confidenceFor(
+  rate: RateResolution | null,
+  matches: HistoryMatch[],
+  historyMedian: number | null,
+  destination: string,
+  originReady: boolean,
+  loadReady: boolean,
+): QuoteConfidence {
+  if (!destination || !originReady || !loadReady) {
+    return {
+      level: "waiting",
+      label: "Waiting",
+      detail: "Lane or load is incomplete",
+    };
+  }
+  if (rate) {
+    return {
+      level: "high",
+      label: "High confidence",
+      detail:
+        historyMedian === null
+          ? "Rate card match"
+          : "Rate card match with exact lane history",
+    };
+  }
+  if (historyMedian !== null && matches.length >= 3) {
+    return {
+      level: "medium",
+      label: "Medium confidence",
+      detail: "Multiple exact sent-email lane matches",
+    };
+  }
+  if (historyMedian !== null) {
+    return {
+      level: "review",
+      label: "Review",
+      detail: "Exact history only, no formal tariff",
+    };
+  }
+  return {
+    level: "manual",
+    label: "Manual quote",
+    detail: "No tariff or exact lane history",
+  };
+}
+
+function calculateQuote(input: {
+  originMode: OriginMode;
+  warehouse: WarehouseId;
+  pickupCity: string;
+  customer: CustomerId;
+  activeProfileLabel: string;
+  destination: string;
+  pallets: number;
+  mode: ServiceMode;
+  selectedAccessorials: SelectedAccessorials;
+  helpers: number;
+  market: number;
+  fsc: number;
+}): CalculatedQuote {
+  const originReady =
+    input.originMode === "warehouse" || Boolean(input.pickupCity.trim());
+  const loadReady = input.pallets > 0 || input.mode !== "ltl";
+  const effectiveWarehouse = effectiveWarehouseFor(
+    input.originMode,
+    input.warehouse,
+    input.pickupCity,
+    input.customer,
+  );
+  const matches =
+    input.destination && originReady && loadReady
+      ? findHistoryMatches(
+          input.originMode,
+          input.warehouse,
+          input.pickupCity,
+          input.customer,
+          input.activeProfileLabel,
+          input.destination,
+          input.pallets,
+          input.mode,
+        )
+      : [];
+  const rate =
+    input.destination && originReady && loadReady
+      ? effectiveWarehouse
+        ? resolveCustomerRate(
+            effectiveWarehouse,
+            input.customer,
+            input.destination,
+            input.pallets,
+            input.mode,
+          )
+        : resolveCustomPickupRate(
+            input.customer,
+            input.pickupCity,
+            input.destination,
+            input.pallets,
+            input.mode,
+          )
+      : null;
+  const historyMedian = median(
+    matches.slice(0, 5).map((match) => match.record.price),
+  );
+  const included = new Set(rate?.includedAccessorialIds ?? []);
+  const accessorialRates = rate?.accessorialRates ?? defaultAccessorials;
+  const accessorials = (
+    Object.entries(input.selectedAccessorials) as Array<[AccessorialKey, boolean]>
+  ).reduce(
+    (sum, [key, selected]) =>
+      sum + (selected && !included.has(key) ? accessorialRates[key] : 0),
+    0,
+  );
+  const helperCharge = input.helpers * 150;
+  const confidence = confidenceFor(
+    rate,
+    matches,
+    historyMedian,
+    input.destination,
+    originReady,
+    loadReady,
+  );
+
+  if (!input.destination || !originReady || !loadReady) {
+    return {
+      rate: null,
+      matches,
+      historyMedian,
+      accessorials: 0,
+      helperCharge: 0,
+      fuelCharge: 0,
+      tariffTotal: null,
+      suggested: null,
+      low: null,
+      high: null,
+      confidence,
+    };
+  }
+
+  if (!rate) {
+    const historicalTotal =
+      historyMedian === null ? null : historyMedian + accessorials + helperCharge;
+    const suggested =
+      historicalTotal === null
+        ? null
+        : round5(historicalTotal * (1 + input.market / 100));
+    return {
+      rate: null,
+      matches,
+      historyMedian,
+      accessorials,
+      helperCharge,
+      fuelCharge: 0,
+      tariffTotal: null,
+      suggested,
+      low: suggested === null ? null : round5(suggested * 0.97),
+      high: suggested === null ? null : round5(suggested * 1.08),
+      confidence,
+    };
+  }
+
+  const fuelCharge = rate.fuelMode === "included" ? 0 : rate.base * (input.fsc / 100);
+  const tariffTotal = rate.base + fuelCharge + accessorials + helperCharge;
+  const suggested = round5(tariffTotal * (1 + input.market / 100));
+  return {
+    rate,
+    matches,
+    historyMedian,
+    accessorials,
+    helperCharge,
+    fuelCharge,
+    tariffTotal,
+    suggested,
+    low: round5(suggested * 0.97),
+    high: round5(suggested * 1.08),
+    confidence,
+  };
+}
+
+function splitBulkLine(line: string) {
+  const trimmed = line.trim().replace(/^\|/, "").replace(/\|$/, "");
+  if (trimmed.includes("|")) return trimmed.split("|").map((cell) => cell.trim());
+  if (trimmed.includes("\t")) return trimmed.split("\t").map((cell) => cell.trim());
+  return trimmed.split(/\s{2,}/).map((cell) => cell.trim());
+}
+
+function looksLikeHeader(cells: string[]) {
+  const joined = clean(cells.join(" "));
+  return (
+    joined.includes("destination") ||
+    joined.includes("load size") ||
+    joined.includes("pallet") ||
+    joined.includes("skid")
+  ) && (joined.includes("load") || joined.includes("store"));
+}
+
+function headerIndex(cells: string[], patterns: RegExp[]) {
+  return cells.findIndex((cell) =>
+    patterns.some((pattern) => pattern.test(clean(cell))),
+  );
+}
+
+function globalPalletOverride(input: string) {
+  const match = input.match(
+    /\b(?:each|all|every)\b.{0,40}?(\d+(?:\.\d+)?)\s*(?:pallets?|skids?|spots?)\b/i,
+  );
+  return match ? Number(match[1]) : null;
+}
+
+function clampBulkPallets(value: number) {
+  if (!Number.isFinite(value) || value <= 0) return 1;
+  return Math.max(0.5, Math.min(60, Math.round(value * 2) / 2));
+}
+
+function parsePalletCount(text: string, fallback: number, forced: number | null) {
+  if (forced !== null) return clampBulkPallets(forced);
+  const palletMatch = text.match(
+    /(\d+(?:\.\d+)?)\s*(?:pallet\s*spots?|spots?|skids?|pallets?)\b/i,
+  );
+  if (palletMatch) return clampBulkPallets(Number(palletMatch[1]));
+  const feetMatch = text.match(/\b(\d+(?:\.\d+)?)\s*ft\b/i);
+  if (feetMatch) return clampBulkPallets(Number(feetMatch[1]) / 2);
+  return clampBulkPallets(fallback || 1);
+}
+
+function parseDelimitedBulkRows(input: string, fallbackPallets: number) {
+  const forced = globalPalletOverride(input);
+  const lines = input
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !/^\|?\s*-{2,}/.test(line));
+  let header: string[] | null = null;
+  const rows: BulkQuoteInput[] = [];
+
+  lines.forEach((line, index) => {
+    const cells = splitBulkLine(line);
+    if (cells.length < 2) return;
+    if (looksLikeHeader(cells)) {
+      header = cells;
+      return;
+    }
+    if (!header) return;
+
+    const loadIndex = headerIndex(header, [/^load\b/, /^order\b/, /^po\b/]);
+    const storeIndex = headerIndex(header, [/^store\b/, /customer/, /consignee/]);
+    const destinationIndex = headerIndex(header, [/destination/, /^dest\b/, /delivery/]);
+    const palletIndex = headerIndex(header, [/pallet/, /skid/, /spot/, /^space$/]);
+    const load = loadIndex >= 0 ? cells[loadIndex] ?? "" : "";
+    const store = storeIndex >= 0 ? cells[storeIndex] ?? "" : "";
+    const destinationText =
+      destinationIndex >= 0 ? cells[destinationIndex] ?? "" : cells.join(" ");
+    const destination = cityFromText(destinationText || cells.join(" "));
+    if (!destination) return;
+    const palletText =
+      palletIndex >= 0 ? cells[palletIndex] ?? cells.join(" ") : cells.join(" ");
+    rows.push({
+      line: index + 1,
+      load,
+      store,
+      destination,
+      pallets: parsePalletCount(palletText, fallbackPallets, forced),
+      raw: line,
+    });
+  });
+
+  return rows;
+}
+
+function parseVerticalBulkRows(input: string, fallbackPallets: number) {
+  const forced = globalPalletOverride(input);
+  const lines = input
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(
+      (line) =>
+        line &&
+        !/^\|?\s*-{2,}/.test(line) &&
+        !/^(load|store|destination|load size|rate)$/i.test(line),
+    );
+  const rows: BulkQuoteInput[] = [];
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const loadMatch = lines[index].match(/\b\d{6,}\b/);
+    if (!loadMatch) continue;
+    const store = lines[index + 1] ?? "";
+    const destinationText = lines[index + 2] ?? "";
+    const loadSize = lines[index + 3] ?? "";
+    const destination = cityFromText(destinationText || store);
+    if (!destination) continue;
+    rows.push({
+      line: index + 1,
+      load: loadMatch[0],
+      store,
+      destination,
+      pallets: parsePalletCount(loadSize, fallbackPallets, forced),
+      raw: [lines[index], store, destinationText, loadSize].join(" "),
+    });
+    index += 3;
+  }
+
+  return rows;
+}
+
+function parseLineBulkRows(input: string, fallbackPallets: number) {
+  const forced = globalPalletOverride(input);
+  return input
+    .split(/\r?\n/)
+    .map((line, index) => ({ line: line.trim(), index }))
+    .filter(({ line }) => line.length >= 5)
+    .map(({ line, index }) => {
+      const destination = cityFromText(line);
+      if (!destination) return null;
+      const load = line.match(/\b\d{6,}\b/)?.[0] ?? "";
+      return {
+        line: index + 1,
+        load,
+        store: "",
+        destination,
+        pallets: parsePalletCount(line, fallbackPallets, forced),
+        raw: line,
+      };
+    })
+    .filter((row): row is BulkQuoteInput => row !== null);
+}
+
+function parseBulkQuoteRows(input: string, fallbackPallets: number) {
+  if (!input.trim()) return [];
+  const delimited = parseDelimitedBulkRows(input, fallbackPallets);
+  const vertical = delimited.length
+    ? []
+    : parseVerticalBulkRows(input, fallbackPallets);
+  const rows =
+    delimited.length > 0
+      ? delimited
+      : vertical.length > 0
+        ? vertical
+        : parseLineBulkRows(input, fallbackPallets);
+  return rows.slice(0, 80);
+}
+
 export function RateCalculator() {
   const [originMode, setOriginMode] = useState<OriginMode>("warehouse");
   const [warehouse, setWarehouse] = useState<WarehouseId>("mississauga");
@@ -610,6 +1113,8 @@ export function RateCalculator() {
   const [market, setMarket] = useState(10);
   const [fscOverride, setFscOverride] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+  const [bulkInput, setBulkInput] = useState("");
+  const [bulkCopied, setBulkCopied] = useState(false);
   const [fuel, setFuel] = useState<FuelSchedule>({
     ltl: 35.4,
     tl: 83.2,
@@ -630,20 +1135,14 @@ export function RateCalculator() {
   const originReady =
     originMode === "warehouse" || Boolean(pickupCity.trim());
   const loadReady = pallets > 0 || mode !== "ltl";
-  const pickupKey = cityKey(pickupCity);
-  let effectiveWarehouse: WarehouseId | null = null;
-  if (originMode === "warehouse") {
-    effectiveWarehouse = warehouse;
-  } else if (
-    pickupKey === "mississauga" ||
-    (customer === "spot" && isSpotGtaPickup(pickupCity))
-  ) {
-    effectiveWarehouse = "mississauga";
-  } else if (
-    ["montreal", "dorval", "lachine", "saint-laurent"].includes(pickupKey)
-  ) {
-    effectiveWarehouse = "montreal";
-  }
+  const selectedAccessorials: SelectedAccessorials = {
+    tailgate,
+    inside,
+    appointment,
+    returns,
+    dunnage,
+    driverAssist,
+  };
 
   const refreshFuel = async () => {
     setFuel((current) => ({ ...current, status: "checking" }));
@@ -711,138 +1210,50 @@ export function RateCalculator() {
     return () => window.clearTimeout(prefillTimer);
   }, []);
 
-  const matches = (() => {
-    if (!destination || !originReady || !loadReady) return [];
-    const destinationKey = cityKey(destination);
-    const pickupKey = cityKey(pickupCity);
-    const selectedCustomer = clean(activeProfile.label);
-    return allHistory
-      .filter((record) => {
-        const sameLane =
-          (originMode === "warehouse"
-            ? historyOriginKey(record.origin) === warehouse
-            : cityKey(record.origin) === pickupKey) &&
-          cityKey(record.destination) === destinationKey;
-        if (!sameLane) return false;
-        if (customer === "spot") return true;
-        const recordCustomer = clean(record.customer);
-        return (
-          recordCustomer.includes(selectedCustomer) ||
-          selectedCustomer.includes(recordCustomer)
-        );
-      })
-      .map((record) => {
-        const skidDistance = record.skids
-          ? Math.abs(record.skids - pallets)
-          : 20;
-        const servicePenalty =
-          mode === "ftl"
-            ? record.service === "FTL"
-              ? 0
-              : 8
-            : record.service === "FTL"
-              ? 8
-              : 0;
-        return { record, score: skidDistance + servicePenalty };
-      })
-      .sort(
-        (a, b) =>
-          a.score - b.score || b.record.date.localeCompare(a.record.date),
-      )
-      .slice(0, 8);
-  })();
-
-  const quote = (() => {
-    const rate =
-      destination && originReady && loadReady
-        ? effectiveWarehouse
-          ? resolveCustomerRate(
-              effectiveWarehouse,
-              customer,
-              destination,
-              pallets,
-              mode,
-            )
-          : resolveCustomPickupRate(
-              customer,
-              pickupCity,
-              destination,
-              pallets,
-              mode,
-            )
-        : null;
-    const historyMedian = median(
-      matches.slice(0, 5).map((match) => match.record.price),
-    );
-    if (!destination || !originReady || !loadReady) {
-      return {
-        rate: null,
-        historyMedian,
-        accessorials: 0,
-        helperCharge: 0,
-        fuelCharge: 0,
-        tariffTotal: null,
-        suggested: null,
-        low: null,
-        high: null,
-      };
-    }
-
-    const selectedAccessorials: Array<[AccessorialKey, boolean]> = [
-      ["tailgate", tailgate],
-      ["inside", inside],
-      ["appointment", appointment],
-      ["returns", returns],
-      ["dunnage", dunnage],
-      ["driverAssist", driverAssist],
-    ];
-    const included = new Set(rate?.includedAccessorialIds ?? []);
-    const accessorialRates = rate?.accessorialRates ?? defaultAccessorials;
-    const accessorials = selectedAccessorials.reduce(
-      (sum, [key, selected]) =>
-        sum + (selected && !included.has(key) ? accessorialRates[key] : 0),
-      0,
-    );
-    const helperCharge = helpers * 150;
-    if (!rate) {
-      const historicalTotal =
-        historyMedian === null
-          ? null
-          : historyMedian + accessorials + helperCharge;
-      const suggested =
-        historicalTotal === null
-          ? null
-          : round5(historicalTotal * (1 + market / 100));
-      return {
-        rate: null,
-        historyMedian,
-        accessorials,
-        helperCharge,
-        fuelCharge: 0,
-        tariffTotal: null,
-        suggested,
-        low: suggested === null ? null : round5(suggested * 0.97),
-        high: suggested === null ? null : round5(suggested * 1.08),
-      };
-    }
-
-    const fuelCharge =
-      rate.fuelMode === "included" ? 0 : rate.base * (fsc / 100);
-    const tariffTotal =
-      rate.base + fuelCharge + accessorials + helperCharge;
-    const suggested = round5(tariffTotal * (1 + market / 100));
+  const quote = calculateQuote({
+    originMode,
+    warehouse,
+    pickupCity,
+    customer,
+    activeProfileLabel: activeProfile.label,
+    destination,
+    pallets,
+    mode,
+    selectedAccessorials,
+    helpers,
+    market,
+    fsc,
+  });
+  const matches = quote.matches;
+  const bulkRows: BulkQuoteResult[] = parseBulkQuoteRows(
+    bulkInput,
+    pallets || 1,
+  ).map((row) => {
+    const rowFuelService = fuelServiceMode(row.destination, mode);
+    const rowFsc =
+      fscOverride ??
+      card.preferredFsc ??
+      (rowFuelService === "ftl" ? fuel.tl : fuel.ltl);
     return {
-      rate,
-      historyMedian,
-      accessorials,
-      helperCharge,
-      fuelCharge,
-      tariffTotal,
-      suggested,
-      low: round5(suggested * 0.97),
-      high: round5(suggested * 1.08),
+      ...row,
+      normalizedDestination: cityDisplayName(row.destination),
+      quote: calculateQuote({
+        originMode,
+        warehouse,
+        pickupCity,
+        customer,
+        activeProfileLabel: activeProfile.label,
+        destination: row.destination,
+        pallets: row.pallets,
+        mode,
+        selectedAccessorials,
+        helpers,
+        market,
+        fsc: rowFsc,
+      }),
     };
-  })();
+  });
+  const pricedBulkRows = bulkRows.filter((row) => row.quote.suggested !== null);
 
   const warehouseLabel =
     warehouse === "mississauga"
@@ -851,12 +1262,17 @@ export function RateCalculator() {
   const originLabel =
     originMode === "warehouse"
       ? warehouseLabel
-      : pickupCity.trim() || "enter a pickup";
+      : pickupCity.trim()
+        ? cityDisplayName(pickupCity)
+        : "enter a pickup";
+  const destinationLabel = destination
+    ? cityDisplayName(destination)
+    : "enter a destination";
   const quoteLine =
     !loadReady
       ? "Pallet count is required before preparing a customer quote."
       : quote.suggested === null
-        ? `Please obtain a live rate for ${originLabel} to ${destination || "the selected destination"}.`
+        ? `Please obtain a live rate for ${originLabel} to ${destinationLabel}.`
         : `It would cost ${currency.format(quote.suggested)}.`;
 
   const reset = () => {
@@ -876,6 +1292,7 @@ export function RateCalculator() {
     setHelpers(0);
     setMarket(10);
     setFscOverride(null);
+    setBulkInput("");
   };
 
   const showResults = () => {
@@ -889,6 +1306,25 @@ export function RateCalculator() {
       window.setTimeout(() => setCopied(false), 1400);
     } catch {
       setCopied(false);
+    }
+  };
+
+  const copyBulkQuotes = async () => {
+    const lines = bulkRows.map((row) => {
+      const load = row.load ? `${row.load} - ` : "";
+      const store = row.store ? `${row.store} - ` : "";
+      const price =
+        row.quote.suggested === null
+          ? "Manual quote"
+          : currency.format(row.quote.suggested);
+      return `${load}${store}${row.normalizedDestination} - ${row.pallets} skid${row.pallets === 1 ? "" : "s"} - ${price} - ${row.quote.confidence.label}`;
+    });
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      setBulkCopied(true);
+      window.setTimeout(() => setBulkCopied(false), 1400);
+    } catch {
+      setBulkCopied(false);
     }
   };
 
@@ -1037,17 +1473,18 @@ export function RateCalculator() {
                   <input
                     type="number"
                     min={0}
-                    max={12}
+                    max={60}
+                    step={0.5}
                     value={pallets}
                     onChange={(event) =>
                       setPallets(
-                        Math.max(0, Math.min(12, Number(event.target.value) || 0)),
+                        Math.max(0, Math.min(60, Number(event.target.value) || 0)),
                       )
                     }
                   />
                   <button
                     type="button"
-                    onClick={() => setPallets((value) => Math.min(12, value + 1))}
+                    onClick={() => setPallets((value) => Math.min(60, value + 1))}
                     aria-label="Add one pallet"
                     title="Add one pallet"
                   >
@@ -1248,7 +1685,7 @@ export function RateCalculator() {
               <span className="eyebrow">Selected lane</span>
               <h2>
                 {originLabel} <span>to</span>{" "}
-                {destination || "enter a destination"}
+                {destinationLabel}
               </h2>
               <p>
                 {activeProfile.label} · {pallets} skid
@@ -1256,17 +1693,9 @@ export function RateCalculator() {
               </p>
             </div>
             <span
-              className={`status-badge ${quote.rate ? "active" : "attention"}`}
+              className={`status-badge confidence-badge ${quote.confidence.level}`}
             >
-              {quote.rate
-                ? "Active tariff"
-                : !loadReady
-                  ? "Set pallet count"
-                  : destination && originReady
-                    ? quote.historyMedian === null
-                      ? "Manual quote"
-                      : "Historical lane"
-                    : "Waiting for lane"}
+              {quote.confidence.label}
             </span>
           </div>
 
@@ -1277,7 +1706,7 @@ export function RateCalculator() {
             </div>
             <div>
               <span>Destination</span>
-              <strong>{destination || "Not selected"}</strong>
+              <strong>{destination ? cityDisplayName(destination) : "Not selected"}</strong>
             </div>
             <div>
               <span>Load</span>
@@ -1417,6 +1846,95 @@ export function RateCalculator() {
             <button type="button" onClick={() => void copyQuote()}>
               {copied ? "Copied" : "Copy quote"}
             </button>
+          </section>
+
+          <section className="bulk-panel">
+            <div className="section-title">
+              <h3>Bulk quote mode</h3>
+              <span>
+                {bulkRows.length
+                  ? `${pricedBulkRows.length}/${bulkRows.length} priced`
+                  : "Ready"}
+              </span>
+            </div>
+            <textarea
+              value={bulkInput}
+              onChange={(event) => {
+                setBulkInput(event.target.value);
+                setBulkCopied(false);
+              }}
+              rows={7}
+              placeholder="Load | Store | Destination | Pallet spots"
+              aria-label="Bulk quote rows"
+            />
+            <div className="bulk-actions">
+              <button
+                type="button"
+                onClick={() => void copyBulkQuotes()}
+                disabled={!bulkRows.length}
+              >
+                {bulkCopied ? "Copied" : "Copy priced rows"}
+              </button>
+              <span>
+                {bulkRows.length
+                  ? `${bulkRows.length} lane${bulkRows.length === 1 ? "" : "s"} found`
+                  : "Current quote settings apply"}
+              </span>
+            </div>
+
+            {bulkRows.length > 0 && (
+              <div className="bulk-table-wrap">
+                <table className="bulk-table">
+                  <thead>
+                    <tr>
+                      <th>Load</th>
+                      <th>Store</th>
+                      <th>Destination</th>
+                      <th>Skids</th>
+                      <th>Quote</th>
+                      <th>Confidence</th>
+                      <th>Basis</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bulkRows.map((row) => (
+                      <tr key={`${row.line}-${row.load}-${row.destination}`}>
+                        <td>{row.load || `Line ${row.line}`}</td>
+                        <td>{row.store || "-"}</td>
+                        <td>
+                          <strong>{row.normalizedDestination}</strong>
+                        </td>
+                        <td>{row.pallets}</td>
+                        <td>
+                          {row.quote.suggested === null
+                            ? "Manual"
+                            : currency.format(row.quote.suggested)}
+                        </td>
+                        <td>
+                          <span
+                            className={`confidence-badge ${row.quote.confidence.level}`}
+                          >
+                            {row.quote.confidence.label}
+                          </span>
+                          <small>{row.quote.confidence.detail}</small>
+                        </td>
+                        <td>
+                          {row.quote.rate
+                            ? row.quote.rate.note
+                            : row.quote.historyMedian === null
+                              ? "Live rate needed"
+                              : "Exact history median"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {bulkInput.trim() && bulkRows.length === 0 && (
+              <p className="bulk-empty">No priced lanes found.</p>
+            )}
           </section>
 
           <details className="evidence">
