@@ -132,23 +132,34 @@ button:disabled {
   gap: 10px;
 }
 
-.bulk-toggle-button {
+.mode-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  min-width: min(480px, 46vw);
   min-height: 42px;
-  padding: 0 14px;
-  border: 1px solid rgba(255, 255, 255, 0.36);
-  border-radius: 5px;
-  background: white;
-  color: var(--forest);
-  font-size: 13px;
-  font-weight: 800;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(7, 38, 33, 0.18);
+  padding: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.bulk-toggle-button:hover,
-.bulk-toggle-button.active {
-  border-color: #f7d48a;
+.mode-tabs button {
+  min-height: 42px;
+  min-width: 0;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #d9e6e2;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.mode-tabs button:hover,
+.mode-tabs button.active {
   background: #f2bf59;
+  color: var(--forest);
 }
 
 .fuel-pill {
@@ -278,6 +289,16 @@ button:disabled {
   gap: 18px;
 }
 
+.form-section-label {
+  margin-bottom: -8px;
+  padding-top: 2px;
+  color: var(--forest-2);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -395,6 +416,20 @@ button:disabled {
   color: var(--forest);
   font-size: 18px;
   line-height: 1;
+}
+
+.spot-estimate-grid.wide {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.spot-estimate-grid.wide span {
+  min-height: 82px;
+  padding: 16px;
+  font-size: 12px;
+}
+
+.spot-estimate-grid.wide strong {
+  font-size: 30px;
 }
 
 .segmented-control {
@@ -754,6 +789,38 @@ button:disabled {
   border-top: 4px solid var(--gold);
 }
 
+.spot-workspace-panel {
+  margin: 16px 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--forest);
+  border-radius: 7px;
+  background: white;
+}
+
+.spot-workspace-panel input {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 14px;
+  padding: 11px 13px;
+  border: 1px solid #cbd4d0;
+  border-radius: 5px;
+  background: #fbfcfb;
+  color: var(--ink);
+}
+
+.spot-workspace-panel input:focus {
+  outline: 3px solid rgba(216, 162, 60, 0.2);
+  border-color: var(--gold);
+}
+
+.spot-workspace-panel p {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .bulk-panel textarea {
   width: 100%;
   min-height: 142px;
@@ -985,7 +1052,11 @@ button:disabled {
     gap: 8px;
   }
 
-  .bulk-toggle-button {
+  .mode-tabs {
+    min-width: min(390px, 56vw);
+  }
+
+  .mode-tabs button {
     min-height: 40px;
     padding-inline: 11px;
   }
@@ -1098,7 +1169,12 @@ button:disabled {
     display: none;
   }
 
-  .bulk-toggle-button {
+  .mode-tabs {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .mode-tabs button {
     min-height: 38px;
     padding-inline: 10px;
     font-size: 12px;
@@ -1118,6 +1194,8 @@ button:disabled {
 
   .form-grid,
   .metric-row,
+  .spot-estimate-grid,
+  .spot-estimate-grid.wide,
   .evidence-stats {
     grid-template-columns: 1fr;
   }

@@ -7,6 +7,9 @@ warehouses.
 
 - Customer-specific rate agreements and spot pricing
 - LTL and FTL pallet pricing
+- Top mode buttons for single quotes, bulk quote paste-in, and pallet spot sizing
+- Bulk quote mode for pricing pasted load/store/destination tables
+- Pallet spot calculator from dimensions such as `51 x 36 x 37` or linear feet
 - APPS fuel surcharge lookup with saved fallback values
 - LTL fuel treatment for the configured Ontario FTL destinations
 - Helper, accessorial, and market-adjustment controls

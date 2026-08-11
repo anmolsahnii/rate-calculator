@@ -70,6 +70,14 @@ type FuelSchedule = {
   status: "checking" | "live" | "saved";
 };
 
+type WorkspaceMode = "quote" | "bulk" | "spots";
+
+const workspaceModes: Array<{ id: WorkspaceMode; label: string }> = [
+  { id: "quote", label: "Single quote" },
+  { id: "bulk", label: "Bulk quote" },
+  { id: "spots", label: "Pallet spots" },
+];
+
 type ConfidenceLevel = "high" | "medium" | "review" | "manual" | "waiting";
 
 type QuoteConfidence = {
@@ -1113,8 +1121,8 @@ export function RateCalculator() {
   const [market, setMarket] = useState(10);
   const [fscOverride, setFscOverride] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+  const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>("quote");
   const [spotCalculatorInput, setSpotCalculatorInput] = useState("");
-  const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkInput, setBulkInput] = useState("");
   const [bulkCopied, setBulkCopied] = useState(false);
   const [fuel, setFuel] = useState<FuelSchedule>({
@@ -1125,6 +1133,7 @@ export function RateCalculator() {
   });
   const resultRef = useRef<HTMLElement>(null);
   const bulkPanelRef = useRef<HTMLElement>(null);
+  const spotPanelRef = useRef<HTMLElement>(null);
 
   const activeProfile =
     customerProfiles.find((profile) => profile.id === customer) ??
@@ -1146,6 +1155,8 @@ export function RateCalculator() {
     dunnage,
     driverAssist,
   };
+  const bulkOpen = workspaceMode === "bulk";
+  const spotMode = workspaceMode === "spots";
   const spotEstimate = estimatePalletSpots(spotCalculatorInput);
 
   const refreshFuel = async () => {
@@ -1272,6 +1283,18 @@ export function RateCalculator() {
   const destinationLabel = destination
     ? cityDisplayName(destination)
     : "enter a destination";
+  const workspaceTitle =
+    workspaceMode === "bulk"
+      ? "Build bulk quotes"
+      : workspaceMode === "spots"
+        ? "Measure pallet spots"
+        : "Build a pallet rate";
+  const workspaceEyebrow =
+    workspaceMode === "bulk"
+      ? "Bulk mode"
+      : workspaceMode === "spots"
+        ? "Load sizing"
+        : "New quote";
   const quoteLine =
     !loadReady
       ? "Pallet count is required before preparing a customer quote."
@@ -1296,8 +1319,8 @@ export function RateCalculator() {
     setHelpers(0);
     setMarket(10);
     setFscOverride(null);
+    setWorkspaceMode("quote");
     setSpotCalculatorInput("");
-    setBulkOpen(false);
     setBulkInput("");
   };
 
@@ -1311,13 +1334,22 @@ export function RateCalculator() {
     if (estimate) setPallets(estimate.palletSpots);
   };
 
-  const toggleBulkMode = () => {
-    const nextOpen = !bulkOpen;
-    setBulkOpen(nextOpen);
-    if (nextOpen) {
+  const switchWorkspaceMode = (nextMode: WorkspaceMode) => {
+    setWorkspaceMode(nextMode);
+    if (nextMode === "bulk") {
       window.setTimeout(
         () =>
           bulkPanelRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          }),
+        0,
+      );
+    }
+    if (nextMode === "spots") {
+      window.setTimeout(
+        () =>
+          spotPanelRef.current?.scrollIntoView({
             behavior: "smooth",
             block: "start",
           }),
@@ -1372,15 +1404,19 @@ export function RateCalculator() {
           </div>
         </div>
         <div className="top-actions">
-          <button
-            className={`bulk-toggle-button ${bulkOpen ? "active" : ""}`}
-            type="button"
-            onClick={toggleBulkMode}
-            aria-controls="bulk-quote-panel"
-            aria-expanded={bulkOpen}
-          >
-            {bulkOpen ? "Close bulk" : "Bulk quote"}
-          </button>
+          <div className="mode-tabs" aria-label="Calculator mode">
+            {workspaceModes.map(({ id, label }) => (
+              <button
+                key={id}
+                className={workspaceMode === id ? "active" : ""}
+                type="button"
+                onClick={() => switchWorkspaceMode(id)}
+                aria-pressed={workspaceMode === id}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           <div className={`fuel-pill ${fuel.status}`}>
           <span className="fuel-dot" aria-hidden="true" />
           <div>
@@ -1413,8 +1449,8 @@ export function RateCalculator() {
         <aside className="quote-tool" aria-label="Quote inputs">
           <div className="tool-heading">
             <div>
-              <span className="eyebrow">New quote</span>
-              <h1>Build a pallet rate</h1>
+              <span className="eyebrow">{workspaceEyebrow}</span>
+              <h1>{workspaceTitle}</h1>
             </div>
             <button className="text-button" type="button" onClick={reset}>
               Reset
@@ -1422,6 +1458,7 @@ export function RateCalculator() {
           </div>
 
           <div className="form-stack">
+            <div className="form-section-label">Agreement</div>
             <label className="field">
               <span>Pricing agreement</span>
               <select
@@ -1440,6 +1477,7 @@ export function RateCalculator() {
               <small>{activeProfile.hint}</small>
             </label>
 
+            <div className="form-section-label">Lane + load</div>
             <fieldset className="field">
               <legend>Pickup origin</legend>
               <div className="segmented-control two-options">
@@ -1579,6 +1617,7 @@ export function RateCalculator() {
               </datalist>
             </label>
 
+            <div className="form-section-label">Service + extras</div>
             <fieldset className="field">
               <legend>Service</legend>
               <div className="segmented-control">
@@ -1856,6 +1895,53 @@ export function RateCalculator() {
 
               {bulkInput.trim() && bulkRows.length === 0 && (
                 <p className="bulk-empty">No priced lanes found.</p>
+              )}
+            </section>
+          )}
+
+          {spotMode && (
+            <section
+              id="pallet-spot-panel"
+              className="spot-workspace-panel"
+              ref={spotPanelRef}
+            >
+              <div className="section-title">
+                <h3>Pallet spot calculator</h3>
+                <span>Dimensions to quote load</span>
+              </div>
+              <input
+                type="text"
+                placeholder="51 x 36 x 37 or 12 ft"
+                value={spotCalculatorInput}
+                onChange={(event) => updateSpotCalculator(event.target.value)}
+                aria-label="Pallet spot dimensions or linear feet"
+              />
+              {spotEstimate ? (
+                <>
+                  <div className="spot-estimate-grid wide">
+                    <span>
+                      <strong>
+                        {formatEstimateNumber(spotEstimate.skidCount)}
+                      </strong>
+                      Skids
+                    </span>
+                    <span>
+                      <strong>
+                        {formatEstimateNumber(spotEstimate.palletSpots)}
+                      </strong>
+                      Pallet spots
+                    </span>
+                    <span>
+                      <strong>
+                        {formatEstimateNumber(spotEstimate.linearFeet)}
+                      </strong>
+                      Linear ft
+                    </span>
+                  </div>
+                  <p>{spotEstimate.detail} has been applied to the load.</p>
+                </>
+              ) : (
+                <p>Enter dimensions or linear feet to calculate the load.</p>
               )}
             </section>
           )}

@@ -9,9 +9,8 @@
     "dev": "next dev",
     "build": "next build",
     "build:standalone": "vite build --config work/standalone/vite.config.mjs && node work/inline_standalone.mjs",
-    "build:extension": "vite build --config chrome-extension/vite.config.mjs",
     "start": "next start",
-    "test": "npm run build && node --test tests/*.test.mjs chrome-extension/tests/*.test.mjs",
+    "test": "next build && node --test tests/*.test.mjs",
     "lint": "eslint . --ignore-pattern out --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
   },

@@ -22,10 +22,11 @@ test("exports the rate calculator for GitHub Pages", async () => {
   assert.match(html, /Straight Truck/);
   assert.match(html, /Dunnage removal/);
   assert.match(html, /Other pickup/);
+  assert.match(html, /Single quote/);
+  assert.match(html, /Pallet spots/);
   assert.match(html, /Pallet spot calculator/);
   assert.match(html, /51 x 36 x 37 or 12 ft/);
   assert.match(html, /Bulk quote/);
-  assert.match(html, /bulk-quote-panel/);
   assert.match(html, /confidence-badge/);
   assert.match(html, /Rate evidence and data notes/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/i);
