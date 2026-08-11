@@ -22,8 +22,8 @@ test("exports the rate calculator for GitHub Pages", async () => {
   assert.match(html, /Straight Truck/);
   assert.match(html, /Dunnage removal/);
   assert.match(html, /Other pickup/);
-  assert.match(html, /Bulk quote mode/);
-  assert.match(html, /Copy priced rows/);
+  assert.match(html, /Bulk quote/);
+  assert.match(html, /bulk-quote-panel/);
   assert.match(html, /confidence-badge/);
   assert.match(html, /Rate evidence and data notes/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/i);

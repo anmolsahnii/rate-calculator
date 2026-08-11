@@ -1113,6 +1113,7 @@ export function RateCalculator() {
   const [market, setMarket] = useState(10);
   const [fscOverride, setFscOverride] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkInput, setBulkInput] = useState("");
   const [bulkCopied, setBulkCopied] = useState(false);
   const [fuel, setFuel] = useState<FuelSchedule>({
@@ -1122,6 +1123,7 @@ export function RateCalculator() {
     status: "checking",
   });
   const resultRef = useRef<HTMLElement>(null);
+  const bulkPanelRef = useRef<HTMLElement>(null);
 
   const activeProfile =
     customerProfiles.find((profile) => profile.id === customer) ??
@@ -1292,11 +1294,27 @@ export function RateCalculator() {
     setHelpers(0);
     setMarket(10);
     setFscOverride(null);
+    setBulkOpen(false);
     setBulkInput("");
   };
 
   const showResults = () => {
     resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const toggleBulkMode = () => {
+    const nextOpen = !bulkOpen;
+    setBulkOpen(nextOpen);
+    if (nextOpen) {
+      window.setTimeout(
+        () =>
+          bulkPanelRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          }),
+        0,
+      );
+    }
   };
 
   const copyQuote = async () => {
@@ -1344,7 +1362,17 @@ export function RateCalculator() {
             <span>Built by Anmol Sahni</span>
           </div>
         </div>
-        <div className={`fuel-pill ${fuel.status}`}>
+        <div className="top-actions">
+          <button
+            className={`bulk-toggle-button ${bulkOpen ? "active" : ""}`}
+            type="button"
+            onClick={toggleBulkMode}
+            aria-controls="bulk-quote-panel"
+            aria-expanded={bulkOpen}
+          >
+            {bulkOpen ? "Close bulk" : "Bulk quote"}
+          </button>
+          <div className={`fuel-pill ${fuel.status}`}>
           <span className="fuel-dot" aria-hidden="true" />
           <div>
             <strong>
@@ -1368,6 +1396,7 @@ export function RateCalculator() {
           >
             ↻
           </button>
+        </div>
         </div>
       </header>
 
@@ -1699,6 +1728,101 @@ export function RateCalculator() {
             </span>
           </div>
 
+          {bulkOpen && (
+            <section
+              id="bulk-quote-panel"
+              className="bulk-panel top-bulk-panel"
+              ref={bulkPanelRef}
+            >
+              <div className="section-title">
+                <h3>Bulk quote mode</h3>
+                <span>
+                  {bulkRows.length
+                    ? `${pricedBulkRows.length}/${bulkRows.length} priced`
+                    : "Paste lanes"}
+                </span>
+              </div>
+              <textarea
+                value={bulkInput}
+                onChange={(event) => {
+                  setBulkInput(event.target.value);
+                  setBulkCopied(false);
+                }}
+                rows={7}
+                placeholder="Load | Store | Destination | Pallet spots"
+                aria-label="Bulk quote rows"
+              />
+              <div className="bulk-actions">
+                <button
+                  type="button"
+                  onClick={() => void copyBulkQuotes()}
+                  disabled={!bulkRows.length}
+                >
+                  {bulkCopied ? "Copied" : "Copy priced rows"}
+                </button>
+                <span>
+                  {bulkRows.length
+                    ? `${bulkRows.length} lane${bulkRows.length === 1 ? "" : "s"} found`
+                    : "Current quote settings apply"}
+                </span>
+              </div>
+
+              {bulkRows.length > 0 && (
+                <div className="bulk-table-wrap">
+                  <table className="bulk-table">
+                    <thead>
+                      <tr>
+                        <th>Load</th>
+                        <th>Store</th>
+                        <th>Destination</th>
+                        <th>Skids</th>
+                        <th>Quote</th>
+                        <th>Confidence</th>
+                        <th>Basis</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bulkRows.map((row) => (
+                        <tr key={`${row.line}-${row.load}-${row.destination}`}>
+                          <td>{row.load || `Line ${row.line}`}</td>
+                          <td>{row.store || "-"}</td>
+                          <td>
+                            <strong>{row.normalizedDestination}</strong>
+                          </td>
+                          <td>{row.pallets}</td>
+                          <td>
+                            {row.quote.suggested === null
+                              ? "Manual"
+                              : currency.format(row.quote.suggested)}
+                          </td>
+                          <td>
+                            <span
+                              className={`confidence-badge ${row.quote.confidence.level}`}
+                            >
+                              {row.quote.confidence.label}
+                            </span>
+                            <small>{row.quote.confidence.detail}</small>
+                          </td>
+                          <td>
+                            {row.quote.rate
+                              ? row.quote.rate.note
+                              : row.quote.historyMedian === null
+                                ? "Live rate needed"
+                                : "Exact history median"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {bulkInput.trim() && bulkRows.length === 0 && (
+                <p className="bulk-empty">No priced lanes found.</p>
+              )}
+            </section>
+          )}
+
           <div className="route-summary" aria-label="Quote summary">
             <div>
               <span>Origin</span>
@@ -1846,95 +1970,6 @@ export function RateCalculator() {
             <button type="button" onClick={() => void copyQuote()}>
               {copied ? "Copied" : "Copy quote"}
             </button>
-          </section>
-
-          <section className="bulk-panel">
-            <div className="section-title">
-              <h3>Bulk quote mode</h3>
-              <span>
-                {bulkRows.length
-                  ? `${pricedBulkRows.length}/${bulkRows.length} priced`
-                  : "Ready"}
-              </span>
-            </div>
-            <textarea
-              value={bulkInput}
-              onChange={(event) => {
-                setBulkInput(event.target.value);
-                setBulkCopied(false);
-              }}
-              rows={7}
-              placeholder="Load | Store | Destination | Pallet spots"
-              aria-label="Bulk quote rows"
-            />
-            <div className="bulk-actions">
-              <button
-                type="button"
-                onClick={() => void copyBulkQuotes()}
-                disabled={!bulkRows.length}
-              >
-                {bulkCopied ? "Copied" : "Copy priced rows"}
-              </button>
-              <span>
-                {bulkRows.length
-                  ? `${bulkRows.length} lane${bulkRows.length === 1 ? "" : "s"} found`
-                  : "Current quote settings apply"}
-              </span>
-            </div>
-
-            {bulkRows.length > 0 && (
-              <div className="bulk-table-wrap">
-                <table className="bulk-table">
-                  <thead>
-                    <tr>
-                      <th>Load</th>
-                      <th>Store</th>
-                      <th>Destination</th>
-                      <th>Skids</th>
-                      <th>Quote</th>
-                      <th>Confidence</th>
-                      <th>Basis</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {bulkRows.map((row) => (
-                      <tr key={`${row.line}-${row.load}-${row.destination}`}>
-                        <td>{row.load || `Line ${row.line}`}</td>
-                        <td>{row.store || "-"}</td>
-                        <td>
-                          <strong>{row.normalizedDestination}</strong>
-                        </td>
-                        <td>{row.pallets}</td>
-                        <td>
-                          {row.quote.suggested === null
-                            ? "Manual"
-                            : currency.format(row.quote.suggested)}
-                        </td>
-                        <td>
-                          <span
-                            className={`confidence-badge ${row.quote.confidence.level}`}
-                          >
-                            {row.quote.confidence.label}
-                          </span>
-                          <small>{row.quote.confidence.detail}</small>
-                        </td>
-                        <td>
-                          {row.quote.rate
-                            ? row.quote.rate.note
-                            : row.quote.historyMedian === null
-                              ? "Live rate needed"
-                              : "Exact history median"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {bulkInput.trim() && bulkRows.length === 0 && (
-              <p className="bulk-empty">No priced lanes found.</p>
-            )}
           </section>
 
           <details className="evidence">

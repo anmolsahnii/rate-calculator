@@ -123,6 +123,34 @@ button:disabled {
   stroke-width: 3;
 }
 
+.top-actions {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.bulk-toggle-button {
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  border-radius: 5px;
+  background: white;
+  color: var(--forest);
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(7, 38, 33, 0.18);
+}
+
+.bulk-toggle-button:hover,
+.bulk-toggle-button.active {
+  border-color: #f7d48a;
+  background: #f2bf59;
+}
+
 .fuel-pill {
   min-height: 42px;
   max-width: 520px;
@@ -681,6 +709,11 @@ button:disabled {
   background: white;
 }
 
+.top-bulk-panel {
+  margin-bottom: 16px;
+  border-top: 4px solid var(--gold);
+}
+
 .bulk-panel textarea {
   width: 100%;
   min-height: 142px;
@@ -908,6 +941,15 @@ button:disabled {
     padding: 10px 16px;
   }
 
+  .top-actions {
+    gap: 8px;
+  }
+
+  .bulk-toggle-button {
+    min-height: 40px;
+    padding-inline: 11px;
+  }
+
   .fuel-pill {
     max-width: 54%;
   }
@@ -1010,6 +1052,16 @@ button:disabled {
     max-width: 47%;
     padding-left: 9px;
     gap: 7px;
+  }
+
+  .top-actions .fuel-pill {
+    display: none;
+  }
+
+  .bulk-toggle-button {
+    min-height: 38px;
+    padding-inline: 10px;
+    font-size: 12px;
   }
 
   .fuel-pill strong {
