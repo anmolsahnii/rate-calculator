@@ -70,12 +70,13 @@ type FuelSchedule = {
   status: "checking" | "live" | "saved";
 };
 
-type WorkspaceMode = "quote" | "bulk" | "spots";
+type WorkspaceMode = "quote" | "bulk" | "spots" | "history";
 
 const workspaceModes: Array<{ id: WorkspaceMode; label: string }> = [
   { id: "quote", label: "Single quote" },
   { id: "bulk", label: "Bulk quote" },
   { id: "spots", label: "Pallet spots" },
+  { id: "history", label: "History" },
 ];
 
 type ConfidenceLevel = "high" | "medium" | "review" | "manual" | "waiting";
@@ -89,6 +90,11 @@ type QuoteConfidence = {
 type HistoryMatch = {
   record: HistoryRecord;
   score: number;
+};
+
+type CitySuggestion = {
+  value: string;
+  label: string;
 };
 
 type SelectedAccessorials = Record<AccessorialKey, boolean>;
@@ -690,6 +696,18 @@ const citySearchTerms = Array.from(
   .filter((term) => term.search.length >= 3)
   .sort((a, b) => b.search.length - a.search.length);
 
+const citySuggestionCandidates = Array.from(
+  new Map(
+    citySearchTerms.map((term) => [
+      term.key,
+      {
+        search: clean(term.key),
+        value: cityDisplayName(term.key),
+      },
+    ]),
+  ).values(),
+).filter((term) => term.search.length >= 4);
+
 function cityFromText(value: string) {
   const raw = clean(value);
   if (!raw) return "";
@@ -699,6 +717,60 @@ function cityFromText(value: string) {
     (term) => raw === term.search || raw.includes(term.search),
   );
   return match?.key ?? exact;
+}
+
+function editDistance(left: string, right: string) {
+  if (left === right) return 0;
+  if (!left.length) return right.length;
+  if (!right.length) return left.length;
+
+  const previous = Array.from({ length: right.length + 1 }, (_, index) => index);
+  const current = Array.from({ length: right.length + 1 }, () => 0);
+
+  for (let leftIndex = 1; leftIndex <= left.length; leftIndex += 1) {
+    current[0] = leftIndex;
+    for (let rightIndex = 1; rightIndex <= right.length; rightIndex += 1) {
+      const cost =
+        left[leftIndex - 1] === right[rightIndex - 1] ? 0 : 1;
+      current[rightIndex] = Math.min(
+        current[rightIndex - 1] + 1,
+        previous[rightIndex] + 1,
+        previous[rightIndex - 1] + cost,
+      );
+    }
+    for (let index = 0; index < previous.length; index += 1) {
+      previous[index] = current[index];
+    }
+  }
+
+  return previous[right.length];
+}
+
+function cityCleanupSuggestion(value: string): CitySuggestion | null {
+  const raw = clean(value);
+  if (raw.length < 4) return null;
+  const resolved = cityKey(value);
+  if (resolved !== raw) return null;
+  if (citySuggestionCandidates.some((candidate) => candidate.search === raw)) {
+    return null;
+  }
+
+  const ranked = citySuggestionCandidates
+    .map((candidate) => ({
+      ...candidate,
+      distance: editDistance(raw, candidate.search),
+    }))
+    .sort((a, b) => a.distance - b.distance || a.search.length - b.search.length);
+  const best = ranked[0];
+  if (!best) return null;
+
+  const maxDistance = raw.length <= 6 ? 1 : 2;
+  if (best.distance > maxDistance) return null;
+
+  return {
+    value: best.value,
+    label: best.value,
+  };
 }
 
 function effectiveWarehouseFor(
@@ -786,7 +858,7 @@ function confidenceFor(
   if (rate) {
     return {
       level: "high",
-      label: "High confidence",
+      label: "Tariff match",
       detail:
         historyMedian === null
           ? "Rate card match"
@@ -796,14 +868,14 @@ function confidenceFor(
   if (historyMedian !== null && matches.length >= 3) {
     return {
       level: "medium",
-      label: "Medium confidence",
+      label: "History match",
       detail: "Multiple exact sent-email lane matches",
     };
   }
   if (historyMedian !== null) {
     return {
       level: "review",
-      label: "Review",
+      label: "Review lane",
       detail: "Exact history only, no formal tariff",
     };
   }
@@ -1134,6 +1206,7 @@ export function RateCalculator() {
   const resultRef = useRef<HTMLElement>(null);
   const bulkPanelRef = useRef<HTMLElement>(null);
   const spotPanelRef = useRef<HTMLElement>(null);
+  const historyPanelRef = useRef<HTMLElement>(null);
 
   const activeProfile =
     customerProfiles.find((profile) => profile.id === customer) ??
@@ -1157,6 +1230,7 @@ export function RateCalculator() {
   };
   const bulkOpen = workspaceMode === "bulk";
   const spotMode = workspaceMode === "spots";
+  const historyMode = workspaceMode === "history";
   const spotEstimate = estimatePalletSpots(spotCalculatorInput);
 
   const refreshFuel = async () => {
@@ -1269,6 +1343,10 @@ export function RateCalculator() {
     };
   });
   const pricedBulkRows = bulkRows.filter((row) => row.quote.suggested !== null);
+  const manualBulkRows = bulkRows.length - pricedBulkRows.length;
+  const recentQuotes = [...allHistory]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 8);
 
   const warehouseLabel =
     warehouse === "mississauga"
@@ -1288,13 +1366,43 @@ export function RateCalculator() {
       ? "Build bulk quotes"
       : workspaceMode === "spots"
         ? "Measure pallet spots"
-        : "Build a pallet rate";
+        : workspaceMode === "history"
+          ? "Review recent lanes"
+          : "Build a pallet rate";
   const workspaceEyebrow =
     workspaceMode === "bulk"
       ? "Bulk mode"
       : workspaceMode === "spots"
         ? "Load sizing"
-        : "New quote";
+        : workspaceMode === "history"
+          ? "History"
+          : "New quote";
+  const destinationCleanup = cityCleanupSuggestion(destination);
+  const pickupCleanup =
+    originMode === "custom" ? cityCleanupSuggestion(pickupCity) : null;
+  const rateSourceLabel = quote.rate
+    ? quote.rate.card.label
+    : quote.historyMedian !== null
+      ? "Exact history only"
+      : "Live rate needed";
+  const quoteFuelLabel = quote.rate?.fuelMode === "included"
+    ? "Fuel included"
+    : `APPS ${fuelService.toUpperCase()} ${fsc.toFixed(1)}%`;
+  const quoteExtras = quote.accessorials + quote.helperCharge;
+  const quoteExtrasLabel =
+    quoteExtras > 0 ? currency.format(quoteExtras) : "No extras";
+  const quoteHistoryLabel = matches.length
+    ? `${matches.length} exact match${matches.length === 1 ? "" : "es"}`
+    : "No exact history";
+  const mobileSteps = [
+    { label: "Lane", complete: originReady && Boolean(destination.trim()) },
+    { label: "Load", complete: loadReady },
+    { label: "Service", complete: Boolean(service) },
+    { label: "Price", complete: quote.suggested !== null },
+  ];
+  const activeStepIndex = mobileSteps.findIndex((step) => !step.complete);
+  const currentStepIndex =
+    activeStepIndex === -1 ? mobileSteps.length - 1 : activeStepIndex;
   const quoteLine =
     !loadReady
       ? "Pallet count is required before preparing a customer quote."
@@ -1350,6 +1458,16 @@ export function RateCalculator() {
       window.setTimeout(
         () =>
           spotPanelRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          }),
+        0,
+      );
+    }
+    if (nextMode === "history") {
+      window.setTimeout(
+        () =>
+          historyPanelRef.current?.scrollIntoView({
             behavior: "smooth",
             block: "start",
           }),
@@ -1458,7 +1576,25 @@ export function RateCalculator() {
           </div>
 
           <div className="form-stack">
-            <div className="form-section-label">Agreement</div>
+            <div className="mobile-steps" aria-label="Quote progress">
+              {mobileSteps.map((step, index) => (
+                <span
+                  key={step.label}
+                  className={
+                    step.complete
+                      ? "complete"
+                      : index === currentStepIndex
+                        ? "active"
+                        : ""
+                  }
+                >
+                  {index + 1}. {step.label}
+                </span>
+              ))}
+            </div>
+
+            <section className="form-section">
+              <div className="form-section-label">Agreement</div>
             <label className="field">
               <span>Pricing agreement</span>
               <select
@@ -1476,8 +1612,10 @@ export function RateCalculator() {
               </select>
               <small>{activeProfile.hint}</small>
             </label>
+            </section>
 
-            <div className="form-section-label">Lane + load</div>
+            <section className="form-section">
+              <div className="form-section-label">Lane + load</div>
             <fieldset className="field">
               <legend>Pickup origin</legend>
               <div className="segmented-control two-options">
@@ -1527,6 +1665,15 @@ export function RateCalculator() {
                       setFscOverride(null);
                     }}
                   />
+                  {pickupCleanup && (
+                    <button
+                      className="city-suggestion"
+                      type="button"
+                      onClick={() => setPickupCity(pickupCleanup.value)}
+                    >
+                      Use {pickupCleanup.label}
+                    </button>
+                  )}
                   <datalist id="pickup-list">
                     {pickupSuggestions.map((city) => (
                       <option key={city} value={city} />
@@ -1606,18 +1753,29 @@ export function RateCalculator() {
                 placeholder="City, province"
                 value={destination}
                 onChange={(event) => {
-                  setDestination(event.target.value);
+                setDestination(event.target.value);
                   setFscOverride(null);
                 }}
               />
+              {destinationCleanup && (
+                <button
+                  className="city-suggestion"
+                  type="button"
+                  onClick={() => setDestination(destinationCleanup.value)}
+                >
+                  Use {destinationCleanup.label}
+                </button>
+              )}
               <datalist id="destination-list">
                 {destinationSuggestions.map((city) => (
                   <option key={city} value={city} />
                 ))}
               </datalist>
             </label>
+            </section>
 
-            <div className="form-section-label">Service + extras</div>
+            <section className="form-section">
+              <div className="form-section-label">Service + extras</div>
             <fieldset className="field">
               <legend>Service</legend>
               <div className="segmented-control">
@@ -1767,11 +1925,12 @@ export function RateCalculator() {
                     aria-pressed={market === adjustment}
                     onClick={() => setMarket(adjustment)}
                   >
-                    {adjustment}%
+                  {adjustment}%
                   </button>
                 ))}
               </div>
             </fieldset>
+            </section>
 
             <button
               className="primary-button"
@@ -1807,7 +1966,7 @@ export function RateCalculator() {
           {bulkOpen && (
             <section
               id="bulk-quote-panel"
-              className="bulk-panel top-bulk-panel"
+              className="bulk-panel top-bulk-panel bulk-drawer"
               ref={bulkPanelRef}
             >
               <div className="section-title">
@@ -1816,6 +1975,20 @@ export function RateCalculator() {
                   {bulkRows.length
                     ? `${pricedBulkRows.length}/${bulkRows.length} priced`
                     : "Paste lanes"}
+                </span>
+              </div>
+              <div className="bulk-stat-row" aria-label="Bulk quote status">
+                <span>
+                  <strong>{bulkRows.length}</strong>
+                  Rows
+                </span>
+                <span>
+                  <strong>{pricedBulkRows.length}</strong>
+                  Priced
+                </span>
+                <span className={manualBulkRows ? "attention" : ""}>
+                  <strong>{manualBulkRows}</strong>
+                  Manual
                 </span>
               </div>
               <textarea
@@ -1945,6 +2118,77 @@ export function RateCalculator() {
               )}
             </section>
           )}
+
+          {historyMode && (
+            <section
+              id="history-panel"
+              className="history-panel"
+              ref={historyPanelRef}
+            >
+              <div className="section-title">
+                <h3>Recent quoted lanes</h3>
+                <span>{recentQuotes.length} latest saved rows</span>
+              </div>
+              <div className="history-list">
+                {recentQuotes.map((record) => (
+                  <article
+                    key={`${record.date}-${record.customer}-${record.origin}-${record.destination}-${record.price}`}
+                  >
+                    <div>
+                      <span>{record.date}</span>
+                      <strong>
+                        {cityDisplayName(record.origin)} to{" "}
+                        {cityDisplayName(record.destination)}
+                      </strong>
+                      <small>
+                        {record.customer} - {record.service}
+                        {record.skids ? ` - ${record.skids} skids` : ""}
+                      </small>
+                    </div>
+                    <strong>{currency.format(record.price)}</strong>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <section className={`quote-hero-card ${quote.confidence.level}`}>
+            <div className="quote-hero-main">
+              <span className="eyebrow">Suggested quote today</span>
+              <strong>
+                {quote.suggested === null
+                  ? "Manual quote"
+                  : currency.format(quote.suggested)}
+              </strong>
+              <p>{quote.confidence.detail}</p>
+            </div>
+            <div className="quote-hero-side">
+              <span className={`confidence-badge ${quote.confidence.level}`}>
+                {quote.confidence.label}
+              </span>
+              <button type="button" onClick={() => void copyQuote()}>
+                {copied ? "Copied" : "Copy quote"}
+              </button>
+            </div>
+            <dl className="quote-hero-details">
+              <div>
+                <dt>Basis</dt>
+                <dd>{rateSourceLabel}</dd>
+              </div>
+              <div>
+                <dt>Fuel</dt>
+                <dd>{quoteFuelLabel}</dd>
+              </div>
+              <div>
+                <dt>Extras</dt>
+                <dd>{quoteExtrasLabel}</dd>
+              </div>
+              <div>
+                <dt>History</dt>
+                <dd>{quoteHistoryLabel}</dd>
+              </div>
+            </dl>
+          </section>
 
           <div className="route-summary" aria-label="Quote summary">
             <div>
