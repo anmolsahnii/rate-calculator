@@ -1,5 +1,75 @@
 [
   {
+    "date": "2026-08-12",
+    "customer": "Canada Cartage / Uniqlo",
+    "origin": "Mississauga",
+    "destination": "Toronto",
+    "skids": 2,
+    "service": "LTL",
+    "price": 95,
+    "kind": "rate confirmation"
+  },
+  {
+    "date": "2026-08-12",
+    "customer": "Canada Cartage / Uniqlo",
+    "origin": "Mississauga",
+    "destination": "Anjou",
+    "skids": 2,
+    "service": "LTL",
+    "price": 335,
+    "kind": "rate confirmation"
+  },
+  {
+    "date": "2026-08-12",
+    "customer": "Canada Cartage / Uniqlo",
+    "origin": "Mississauga",
+    "destination": "Mount Royal",
+    "skids": 2,
+    "service": "LTL",
+    "price": 335,
+    "kind": "rate confirmation"
+  },
+  {
+    "date": "2026-08-12",
+    "customer": "Radiant",
+    "origin": "Mississauga",
+    "destination": "Kingston",
+    "skids": 6,
+    "service": "Straight Truck",
+    "price": 594,
+    "kind": "confirmed - tailgate, appointment, front door"
+  },
+  {
+    "date": "2026-08-12",
+    "customer": "Radiant",
+    "origin": "Rexdale",
+    "destination": "Brampton",
+    "skids": 1,
+    "service": "LTL",
+    "price": 95,
+    "kind": "sent quote"
+  },
+  {
+    "date": "2026-08-12",
+    "customer": "Radiant",
+    "origin": "Caledon",
+    "destination": "Cornwall",
+    "skids": 2,
+    "service": "LTL",
+    "price": 284,
+    "kind": "sent quote"
+  },
+  {
+    "date": "2026-08-12",
+    "customer": "Radiant",
+    "origin": "Caledon",
+    "destination": "Mississauga",
+    "skids": 2,
+    "service": "LTL",
+    "price": 130,
+    "kind": "sent quote"
+  },
+  {
     "date": "2026-08-11",
     "customer": "Radiant / Farm Boy",
     "origin": "Welland",
