@@ -8,7 +8,15 @@ import {
   formatEstimateNumber,
 } from "./pallet-spots";
 import { parseRatePrefill } from "./rate-prefill";
-import { cityKey, clean, isSpotGtaPickup, zoneFor } from "./rate-matching";
+import {
+  cityKey,
+  clean,
+  isMontrealLocalPostalCode,
+  isQuebecCityPostalCode,
+  isSpotGtaPickup,
+  postalCodeFsa,
+  zoneFor,
+} from "./rate-matching";
 import {
   cityAliases,
   cclsQuebecRates,
@@ -22,6 +30,7 @@ import {
   montrealLocal,
   ontarioZones,
   palletLaneCards,
+  postalCodeSuggestions,
   rateCards,
   spotOntarioZones,
   straightTruckMax5Ton,
@@ -250,6 +259,8 @@ function resolveCustomerRate(
   service: ServiceMode,
 ): RateResolution | null {
   const destination = cityKey(destinationInput);
+  const postalMontrealLocal = isMontrealLocalPostalCode(destinationInput);
+  const postalQuebecCity = isQuebecCityPostalCode(destinationInput);
   const card = rateCards[customer];
   const palletTable = palletLaneCards[customer];
 
@@ -424,7 +435,7 @@ function resolveCustomerRate(
     if (
       customer === "spot" &&
       service === "ltl" &&
-      destination === "montreal local"
+      (destination === "montreal local" || postalMontrealLocal)
     ) {
       return {
         base: montrealCard.local[rateIndex(pallets, montrealCard.local.length)],
@@ -437,7 +448,7 @@ function resolveCustomerRate(
     if (
       customer === "spot" &&
       service === "ltl" &&
-      destination === "montreal exterior"
+      (destination === "montreal exterior" || postalQuebecCity)
     ) {
       return {
         base:
@@ -470,7 +481,7 @@ function resolveCustomerRate(
   if (
     customer === "spot" &&
     service === "ltl" &&
-    destination === "montreal local"
+    (destination === "montreal local" || postalMontrealLocal)
   ) {
     return {
       base: montrealCard.local[rateIndex(pallets, montrealCard.local.length)],
@@ -483,7 +494,7 @@ function resolveCustomerRate(
   if (
     customer === "spot" &&
     service === "ltl" &&
-    destination === "montreal exterior"
+    (destination === "montreal exterior" || postalQuebecCity)
   ) {
     return {
       base:
@@ -514,7 +525,8 @@ function resolveCustomerRate(
   if (
     customer === "spot" &&
     service === "ltl" &&
-    montrealLocal.some((city) => clean(city) === clean(destination))
+    (postalMontrealLocal ||
+      montrealLocal.some((city) => clean(city) === clean(destination)))
   ) {
     return {
       base: montrealCard.local[rateIndex(pallets, montrealCard.local.length)],
@@ -527,7 +539,8 @@ function resolveCustomerRate(
   if (
     customer === "spot" &&
     service === "ltl" &&
-    montrealExterior.some((city) => clean(city) === clean(destination))
+    (postalQuebecCity ||
+      montrealExterior.some((city) => clean(city) === clean(destination)))
   ) {
     return {
       base:
@@ -553,7 +566,8 @@ function resolveCustomerRate(
   if (
     customer === "nippon" &&
     service === "ltl" &&
-    montrealLocal.some((city) => clean(city) === clean(destination))
+    (postalMontrealLocal ||
+      montrealLocal.some((city) => clean(city) === clean(destination)))
   ) {
     return {
       base: montrealCard.local[rateIndex(pallets, montrealCard.local.length)],
@@ -566,7 +580,8 @@ function resolveCustomerRate(
   if (
     customer === "nippon" &&
     service === "ltl" &&
-    montrealExterior.some((city) => clean(city) === clean(destination))
+    (postalQuebecCity ||
+      montrealExterior.some((city) => clean(city) === clean(destination)))
   ) {
     return {
       base:
@@ -787,7 +802,10 @@ function effectiveWarehouseFor(
   ) {
     return "mississauga";
   }
-  if (["montreal", "dorval", "lachine", "saint-laurent"].includes(pickupKey)) {
+  if (
+    isMontrealLocalPostalCode(pickupCity) ||
+    ["montreal", "dorval", "lachine", "saint-laurent"].includes(pickupKey)
+  ) {
     return "montreal";
   }
   return null;
@@ -1380,8 +1398,11 @@ export function RateCalculator() {
           ? "History"
           : "New quote";
   const destinationCleanup = cityCleanupSuggestion(destination);
+  const destinationPostalFsa = postalCodeFsa(destination);
   const pickupCleanup =
     originMode === "custom" ? cityCleanupSuggestion(pickupCity) : null;
+  const pickupPostalFsa =
+    originMode === "custom" ? postalCodeFsa(pickupCity) : null;
   const rateSourceLabel = quote.rate
     ? quote.rate.card.label
     : quote.historyMedian !== null
@@ -1662,7 +1683,7 @@ export function RateCalculator() {
                   <input
                     type="text"
                     list="pickup-list"
-                    placeholder="City, province"
+                    placeholder="City or postal code"
                     value={pickupCity}
                     onChange={(event) => {
                       setPickupCity(event.target.value);
@@ -1678,9 +1699,19 @@ export function RateCalculator() {
                       Use {pickupCleanup.label}
                     </button>
                   )}
+                  {pickupPostalFsa && (
+                    <small>
+                      {pickupPostalFsa} matched to {cityDisplayName(pickupCity)}
+                    </small>
+                  )}
                   <datalist id="pickup-list">
                     {pickupSuggestions.map((city) => (
                       <option key={city} value={city} />
+                    ))}
+                    {postalCodeSuggestions.map(({ prefix, destination: city }) => (
+                      <option key={`pickup-${prefix}`} value={prefix}>
+                        {cityDisplayName(city)}
+                      </option>
                     ))}
                   </datalist>
                 </label>
@@ -1726,7 +1757,7 @@ export function RateCalculator() {
               <input
                 type="text"
                 list="destination-list"
-                placeholder="City, province"
+                placeholder="City or postal code"
                 value={destination}
                 onChange={(event) => {
                 setDestination(event.target.value);
@@ -1742,9 +1773,19 @@ export function RateCalculator() {
                   Use {destinationCleanup.label}
                 </button>
               )}
+              {destinationPostalFsa && (
+                <small>
+                  {destinationPostalFsa} matched to {destinationLabel}
+                </small>
+              )}
               <datalist id="destination-list">
                 {destinationSuggestions.map((city) => (
                   <option key={city} value={city} />
+                ))}
+                {postalCodeSuggestions.map(({ prefix, destination: city }) => (
+                  <option key={`destination-${prefix}`} value={prefix}>
+                    {cityDisplayName(city)}
+                  </option>
                 ))}
               </datalist>
             </label>

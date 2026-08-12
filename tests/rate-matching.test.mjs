@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { cityKey, isSpotGtaPickup, zoneFor } from "../app/rate-matching.ts";
-import { rateCards, spotOntarioZones } from "../app/rate-data.ts";
+import {
+  cityKey,
+  isMontrealLocalPostalCode,
+  isQuebecCityPostalCode,
+  isSpotGtaPickup,
+  postalCodeFsa,
+  zoneFor,
+} from "../app/rate-matching.ts";
+import { ftlZones, rateCards, spotOntarioZones } from "../app/rate-data.ts";
 
 test("keeps Ontario Spot cities from matching the Nova Scotia alias", () => {
   assert.equal(cityKey("brampton"), "brampton");
@@ -24,4 +31,17 @@ test("normalizes common quote spelling and store aliases", () => {
   assert.equal(cityKey("Farm Boy Port Credit"), "mississauga");
   assert.equal(cityKey("Farm Boy King & Weber"), "waterloo");
   assert.equal(cityKey("Farm Boy Fairway"), "kitchener");
+});
+
+test("resolves full Canadian postal codes into existing rate zones", () => {
+  assert.equal(postalCodeFsa("Kingston, ON K7M 8T5"), "K7M");
+  assert.equal(cityKey("Kingston, ON K7M 8T5"), "kingston");
+  assert.equal(zoneFor(cityKey("K7M 8T5"), ftlZones), 6);
+  assert.equal(cityKey("L0S 1J0"), "niagara-on-the-lake");
+  assert.equal(zoneFor(cityKey("L0S 1J0"), spotOntarioZones), 6);
+  assert.equal(cityKey("H4T 1S5"), "saint-laurent");
+  assert.equal(isMontrealLocalPostalCode("H4T 1S5"), true);
+  assert.equal(isMontrealLocalPostalCode("J3G 2T3"), true);
+  assert.equal(cityKey("G1K 7P4"), "quebec city");
+  assert.equal(isQuebecCityPostalCode("G1K 7P4"), true);
 });

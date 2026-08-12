@@ -174,7 +174,7 @@ export const spotOntarioZones: Record<number, string[]> = {
     "simcoe",
   ],
   5: ["ottawa"],
-  6: ["niagara", "st catharines"],
+  6: ["niagara", "niagara-on-the-lake", "st catharines"],
 };
 
 export const spotGtaPickupOrigins = [
@@ -350,6 +350,7 @@ export const montrealExterior = [
   "ste-therese",
   "saint-jerome",
   "st-jerome",
+  "quebec city",
 ];
 
 const genericLtl = {
@@ -637,6 +638,136 @@ export const cityAliases: Record<string, string> = {
 const destinationDisplayNames: Record<string, string> = {
   "nova scotia": "Nova Scotia",
 };
+
+const postalAliasGroups: Array<[string, string[]]> = [
+  ["nova scotia", ["B"]],
+  ["winnipeg", ["R2", "R3"]],
+  ["saskatoon", ["S7"]],
+  ["calgary edmonton", ["T1X", "T2", "T3", "T5", "T6"]],
+  ["vancouver", ["V5", "V6", "V7"]],
+  ["metrotown", ["V5H"]],
+  ["richmond", ["V6V", "V6W", "V6X", "V6Y", "V7A", "V7B", "V7C", "V7E"]],
+
+  ["scarborough", ["M1"]],
+  ["north york", ["M2", "M3", "M9L", "M9M"]],
+  ["toronto", ["M4", "M5", "M6", "M7"]],
+  ["etobicoke", ["M8", "M9"]],
+  ["mississauga", ["L4T", "L4V", "L4W", "L4X", "L4Y", "L4Z", "L5"]],
+  ["vaughan", ["L4H", "L4J", "L4K", "L4L", "L6A"]],
+  ["richmond hill", ["L4B", "L4C", "L4E", "L4S"]],
+  ["aurora", ["L4G"]],
+  ["barrie", ["L4M", "L4N", "L9J", "L9X"]],
+  ["markham", ["L3P", "L3R", "L3S", "L3T", "L6B", "L6C", "L6E", "L6G"]],
+  ["newmarket", ["L3X", "L3Y"]],
+  ["pickering", ["L1V", "L1W", "L1X", "L1Y"]],
+  ["oshawa", ["L1G", "L1H", "L1J", "L1K", "L1L"]],
+  ["whitby", ["L1M", "L1N", "L1P", "L1R"]],
+  ["brampton", ["L6P", "L6R", "L6S", "L6T", "L6V", "L6W", "L6X", "L6Y", "L6Z", "L7A"]],
+  ["oakville", ["L6H", "L6J", "L6K", "L6L", "L6M"]],
+  ["milton", ["L9E", "L9T"]],
+  ["georgetown", ["L7G"]],
+  ["burlington", ["L7L", "L7M", "L7N", "L7P", "L7R", "L7S", "L7T"]],
+  ["bolton", ["L7E"]],
+  ["caledon", ["L7C", "L7K"]],
+  ["orangeville", ["L9V", "L9W"]],
+  ["hamilton", ["L8", "L9A", "L9B", "L9C"]],
+  ["kitchener", ["N2"]],
+  ["waterloo", ["N2J", "N2L", "N2T", "N2V"]],
+  ["guelph", ["N1C", "N1E", "N1G", "N1H", "N1K", "N1L"]],
+  ["cambridge", ["N1P", "N1R", "N1S", "N1T", "N3C", "N3E", "N3H"]],
+  ["paris", ["N3L"]],
+  ["simcoe", ["N3Y"]],
+  ["cookstown", ["L0L"]],
+  ["london", ["N5", "N6"]],
+  ["woodstock", ["N4S", "N4T", "N4V"]],
+  ["peterborough", ["K9H", "K9J", "K9K", "K9L"]],
+  ["ottawa", ["K1", "K2", "K4A"]],
+  ["kingston", ["K7K", "K7L", "K7M", "K7N", "K7P"]],
+  ["belleville", ["K8N", "K8P", "K8R"]],
+  ["niagara-on-the-lake", ["L0S"]],
+  ["niagara", ["L2E", "L2G", "L2H", "L2J"]],
+  ["st catharines", ["L2M", "L2N", "L2P", "L2R", "L2S", "L2T", "L2V", "L2W"]],
+
+  ["montreal", ["H1", "H2", "H3", "H4", "H5", "H8", "H9"]],
+  ["laval", ["H7"]],
+  ["saint-laurent", ["H4L", "H4M", "H4N", "H4R", "H4S", "H4T"]],
+  ["lachine", ["H8S", "H8T"]],
+  ["lasalle", ["H8N", "H8P"]],
+  ["dorval", ["H9P", "H9S"]],
+  ["anjou", ["H1J", "H1K"]],
+  ["st-jean-sur-richelieu", ["J2W", "J2X", "J2Y", "J3A", "J3B"]],
+  ["sainte-julie", ["J3E"]],
+  ["beloeil", ["J3G"]],
+  ["mont-st-hilaire", ["J3H"]],
+  ["chambly", ["J3L"]],
+  ["marieville", ["J3M"]],
+  ["saint-basile-le-grand", ["J3N"]],
+  ["saint-bruno", ["J3V"]],
+  ["varennes", ["J3X"]],
+  ["st-hubert", ["J3Y", "J3Z", "J4T"]],
+  ["boucherville", ["J4B"]],
+  ["longueuil", ["J4G", "J4H", "J4J", "J4K", "J4L", "J4M", "J4N"]],
+  ["st-lambert", ["J4P", "J4R", "J4S"]],
+  ["greenfield park", ["J4V"]],
+  ["brossard", ["J4W", "J4X", "J4Y", "J4Z"]],
+  ["saint-constant", ["J5A"]],
+  ["delson", ["J5B"]],
+  ["sainte-catherine", ["J5C"]],
+  ["saint-jerome", ["J5L", "J7Y", "J7Z"]],
+  ["la prairie", ["J5R"]],
+  ["repentigny", ["J5Y", "J5Z", "J6A"]],
+  ["chateauguay", ["J6J", "J6K"]],
+  ["beauharnois", ["J6N"]],
+  ["mercier", ["J6R"]],
+  ["salaberry-de-valleyfield", ["J6S"]],
+  ["terrebonne", ["J6V", "J6W", "J6X", "J6Y"]],
+  ["blainville", ["J6Z", "J7A", "J7B", "J7C", "J7E", "J7G", "J7H"]],
+  ["mirabel", ["J7J", "J7N"]],
+  ["mascouche", ["J7K", "J7L"]],
+  ["la plaine", ["J7M"]],
+  ["saint-eustache", ["J7P", "J7R"]],
+  ["vaudreuil-dorion", ["J7T", "J7V"]],
+  ["pincourt", ["J7W"]],
+  ["st-hyacinthe", ["J2R", "J2S", "J2T"]],
+
+  ["quebec city", ["G1", "G2", "G3A", "G3E", "G3G", "G3J", "G3K"]],
+  ["levis", ["G6V", "G6W", "G6X", "G6Y", "G6Z"]],
+  ["drummondville", ["J2A", "J2B", "J2C", "J2E"]],
+  ["riviere-du-loup", ["G5R"]],
+  ["gatineau", ["J8P", "J8R", "J8T", "J8V", "J9A", "J9H", "J9J"]],
+  ["shawinigan", ["G9N", "G9P", "G9R"]],
+  ["sherbrooke", ["J1"]],
+  ["joliette", ["J6E"]],
+  ["granby", ["J2G", "J2H", "J2J"]],
+  ["victoriaville", ["G6P", "G6R", "G6S", "G6T"]],
+  ["trois-rivieres", ["G8Y", "G8Z", "G9A", "G9B", "G9C"]],
+  ["chicoutimi", ["G7G", "G7H", "G7J", "G7K"]],
+  ["st-georges", ["G5Y", "G5Z", "G6A"]],
+  ["rimouski", ["G5L", "G5M", "G5N"]],
+];
+
+export const postalCodeCityAliases: Record<string, string> = Object.fromEntries(
+  postalAliasGroups.flatMap(([destination, prefixes]) =>
+    prefixes.map((prefix) => [prefix, destination]),
+  ),
+);
+
+export const montrealLocalPostalPrefixes = [
+  "H1", "H2", "H3", "H4", "H5", "H7", "H8", "H9",
+  "J2W", "J2Y", "J3A", "J3B", "J3E", "J3G", "J3L", "J3N", "J3V", "J3X", "J3Y", "J3Z",
+  "J4B", "J4G", "J4H", "J4J", "J4K", "J4L", "J4M", "J4N", "J4P", "J4R", "J4S", "J4T", "J4V", "J4W", "J4X", "J4Y", "J4Z",
+  "J5A", "J5B", "J5C", "J5R", "J5Y", "J5Z", "J6A", "J6J", "J6K", "J6N", "J6R", "J6S", "J6V", "J6W", "J6X", "J6Y", "J6Z",
+  "J7A", "J7B", "J7C", "J7E", "J7G", "J7H", "J7J", "J7K", "J7L", "J7M", "J7N", "J7P", "J7R", "J7T", "J7V", "J7W",
+];
+
+export const quebecCityPostalPrefixes = [
+  "G1", "G2", "G3A", "G3E", "G3G", "G3J", "G3K",
+];
+
+export const postalCodeSuggestions = Object.entries(postalCodeCityAliases)
+  .filter(([prefix]) => prefix.length === 3)
+  .map(([prefix, destination]) => ({ prefix, destination }))
+  .sort((left, right) => left.prefix.localeCompare(right.prefix));
 
 export const destinationSuggestions = Array.from(
   new Set([

@@ -5,6 +5,8 @@ import {
   destinationSuggestions,
   ftlLtlFuelDestinations,
   palletLaneCards,
+  montrealExterior,
+  postalCodeSuggestions,
   rateCards,
   spotGtaPickupOrigins,
   spotOntarioZones,
@@ -77,4 +79,14 @@ test("adds 18 Wheels Mississauga outbound pallet lanes", () => {
   assert.equal(cityAliases.halifax, "nova scotia");
   assert.equal(destinationSuggestions.includes("Nova Scotia"), true);
   assert.equal(destinationSuggestions.includes("nova scotia"), false);
+});
+
+test("includes postal search coverage for configured destination zones", () => {
+  assert.equal(spotOntarioZones[6].includes("niagara-on-the-lake"), true);
+  assert.equal(montrealExterior.includes("quebec city"), true);
+  assert.equal(
+    postalCodeSuggestions.some(({ prefix, destination }) =>
+      prefix === "K7M" && destination === "kingston"),
+    true,
+  );
 });

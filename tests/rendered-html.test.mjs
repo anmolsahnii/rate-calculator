@@ -19,6 +19,8 @@ test("exports the rate calculator for GitHub Pages", async () => {
   assert.match(html, /Montreal/);
   assert.match(html, /Montreal Local/);
   assert.match(html, /Montreal Exterior/);
+  assert.match(html, /City or postal code/);
+  assert.match(html, /K7M/);
   assert.match(html, /Straight Truck/);
   assert.match(html, /Dunnage removal/);
   assert.match(html, /Other pickup/);

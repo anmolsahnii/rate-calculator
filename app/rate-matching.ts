@@ -1,7 +1,17 @@
 import {
   cityAliases,
+  montrealLocalPostalPrefixes,
+  postalCodeCityAliases,
+  quebecCityPostalPrefixes,
   spotGtaPickupOrigins,
 } from "./rate-data.ts";
+
+const postalAliasEntries = Object.entries(postalCodeCityAliases).sort(
+  ([left], [right]) => right.length - left.length,
+);
+
+const canadianPostalPattern =
+  /\b([ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTVWXYZ])(?:[\s-]?(\d[ABCEGHJ-NPRSTVWXYZ]\d))?\b/i;
 
 export function clean(value: unknown) {
   return String(value ?? "")
@@ -14,8 +24,34 @@ export function clean(value: unknown) {
     .trim();
 }
 
+export function postalCodeFsa(value: unknown) {
+  const match = String(value ?? "").toUpperCase().match(canadianPostalPattern);
+  return match?.[1] ?? null;
+}
+
+function postalPrefixMatch(value: unknown, prefixes: string[]) {
+  const fsa = postalCodeFsa(value);
+  return Boolean(fsa && prefixes.some((prefix) => fsa.startsWith(prefix)));
+}
+
+export function postalCodeDestination(value: unknown) {
+  const fsa = postalCodeFsa(value);
+  if (!fsa) return null;
+  return postalAliasEntries.find(([prefix]) => fsa.startsWith(prefix))?.[1] ?? null;
+}
+
+export function isMontrealLocalPostalCode(value: unknown) {
+  return postalPrefixMatch(value, montrealLocalPostalPrefixes);
+}
+
+export function isQuebecCityPostalCode(value: unknown) {
+  return postalPrefixMatch(value, quebecCityPostalPrefixes);
+}
+
 export function cityKey(value: unknown) {
   if (/^n\.?s\.?$/i.test(String(value ?? "").trim())) return "nova scotia";
+  const postalDestination = postalCodeDestination(value);
+  if (postalDestination) return postalDestination;
   const raw = clean(value);
   if (raw === "montreal local" || raw === "montreal exterior") return raw;
   for (const [alias, canonical] of Object.entries(cityAliases)) {
