@@ -7,6 +7,10 @@ test("exports the rate calculator for GitHub Pages", async () => {
     new URL("../out/index.html", import.meta.url),
     "utf8",
   );
+  const calculatorSource = await readFile(
+    new URL("../app/RateCalculator.tsx", import.meta.url),
+    "utf8",
+  );
   assert.match(html, /<title>Rate Calculator<\/title>/i);
   assert.match(html, /Professional pallet freight pricing/);
   assert.match(html, /Built by Anmol Sahni/);
@@ -28,6 +32,7 @@ test("exports the rate calculator for GitHub Pages", async () => {
   assert.match(html, /History/);
   assert.match(html, /quote-hero-card/);
   assert.match(html, /Suggested quote today/);
+  assert.match(calculatorSource, /It would cost.*all in\./);
   assert.match(html, /Pallet spots/);
   assert.doesNotMatch(html, /Pallet spot calculator/);
   assert.doesNotMatch(html, /51 x 36 x 37, 51, 36, 37, 12 ft, or 12/);

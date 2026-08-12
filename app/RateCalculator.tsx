@@ -1431,7 +1431,7 @@ export function RateCalculator() {
       ? "Pallet count is required before preparing a customer quote."
       : quote.suggested === null
         ? `Please obtain a live rate for ${originLabel} to ${destinationLabel}.`
-        : `It would cost ${currency.format(quote.suggested)}.`;
+        : `It would cost ${currency.format(quote.suggested)} all in.`;
 
   const reset = () => {
     setOriginMode("warehouse");
