@@ -43,7 +43,7 @@ export const customerProfiles: Array<{
   {
     id: "wheels18",
     label: "18 Wheels",
-    hint: "Mississauga outbound skid table for Nova Scotia, Winnipeg, Saskatoon, Calgary-Edmonton, and Vancouver.",
+    hint: "GTA 5 Ton Ontario zones plus Mississauga outbound rates for Nova Scotia and Western Canada.",
   },
   {
     id: "canada",
@@ -140,6 +140,34 @@ export const ontarioZones: Record<number, string[]> = {
   ],
   5: ["london", "woodstock", "peterborough"],
   6: ["ottawa", "nepean"],
+};
+
+export const wheels18OntarioZones: Record<number, string[]> = {
+  1: [
+    "vaughan",
+    "toronto",
+    "scarborough",
+    "north york",
+    "mississauga",
+    "etobicoke",
+    "brampton",
+    "woodbridge",
+  ],
+  2: ["oakville", "milton", "georgetown", "burlington", "bolton", "caledon"],
+  3: [
+    "pickering",
+    "oshawa",
+    "orangeville",
+    "newmarket",
+    "markham",
+    "hamilton",
+    "aurora",
+    "richmond hill",
+    "whitby",
+  ],
+  4: ["kitchener", "guelph", "cookstown", "cambridge", "barrie", "waterloo", "simcoe"],
+  5: ["london", "woodstock", "peterborough"],
+  6: ["ottawa"],
 };
 
 export const spotOntarioZones: Record<number, string[]> = {
@@ -362,6 +390,15 @@ const genericLtl = {
   6: [150, 221, 290, 359, 428, 498, 567, 636, 756, 788, 1248],
 };
 
+const wheels18OntarioLtl = {
+  1: [52, 70, 88, 106, 124, 142, 154, 160, 166, 172, 178],
+  2: [80, 104, 118, 130, 144, 162, 168, 174, 180, 188, 200],
+  3: [106, 130, 142, 148, 168, 186, 198, 210, 216, 222, 234],
+  4: [106, 130, 142, 148, 168, 186, 198, 210, 216, 222, 234],
+  5: [117, 143, 156, 163, 185, 205, 218, 231, 238, 244, 257],
+  6: [150, 221, 290, 359, 428, 498, 567, 636, 756, 788, 1248],
+};
+
 const nlsLtl = {
   1: [43, 58, 73, 88, 103, 118, 128, 133, 138, 143, 148],
   2: [67, 87, 98, 108, 120, 135, 140, 145, 150, 157, 167],
@@ -392,8 +429,9 @@ export const rateCards: Record<CustomerId, RateCard> = {
   wheels18: {
     label: "18 Wheels",
     effective: "2026",
-    sourceLabel: "18 Wheels outbound Mississauga rate card",
+    sourceLabel: "18 Wheels GTA 5 Ton and outbound Mississauga rate cards",
     fuelMode: "included",
+    ltl: wheels18OntarioLtl,
   },
   canada: {
     label: "Canada Cartage",

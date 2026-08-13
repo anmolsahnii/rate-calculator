@@ -34,6 +34,7 @@ import {
   rateCards,
   spotOntarioZones,
   straightTruckMax5Ton,
+  wheels18OntarioZones,
   vessiReturnLaneCards,
   type CustomerId,
   type FuelMode,
@@ -266,7 +267,7 @@ function resolveCustomerRate(
 
   if (
     customer === "wheels18" &&
-    (warehouse !== "mississauga" || service !== "ltl" || pallets > 7)
+    (warehouse !== "mississauga" || service !== "ltl" || pallets > 11)
   ) {
     return null;
   }
@@ -293,6 +294,8 @@ function resolveCustomerRate(
     service === "ltl" &&
     palletTable?.[destination]
   ) {
+    if (customer === "wheels18" && pallets > 7) return null;
+
     const values = palletTable[destination];
     return {
       base: values[rateIndex(pallets, values.length)],
@@ -374,7 +377,9 @@ function resolveCustomerRate(
         ? zoneFor(destination, ftlZones)
         : customer === "spot"
           ? zoneFor(destination, spotOntarioZones)
-        : zoneFor(destination, ontarioZones);
+          : customer === "wheels18"
+            ? zoneFor(destination, wheels18OntarioZones)
+            : zoneFor(destination, ontarioZones);
 
     if (service === "ltl" && customer === "canada") {
       if (
@@ -417,9 +422,12 @@ function resolveCustomerRate(
       const values = card.ltl[zone];
       return {
         base: values[rateIndex(pallets, values.length)],
-        note: `${card.label} Ontario LTL Zone ${zone}`,
+        note:
+          customer === "wheels18"
+            ? `${card.label} GTA 5 Ton LTL Zone ${zone}`
+            : `${card.label} Ontario LTL Zone ${zone}`,
         card,
-        fuelMode: card.fuelMode,
+        fuelMode: customer === "wheels18" ? "add" : card.fuelMode,
       };
     }
 

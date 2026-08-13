@@ -11,6 +11,7 @@ import {
   spotGtaPickupOrigins,
   spotOntarioZones,
   straightTruckMax5Ton,
+  wheels18OntarioZones,
 } from "../app/rate-data.ts";
 
 test("uses LTL fuel for every configured Ontario FTL destination", () => {
@@ -79,6 +80,25 @@ test("adds 18 Wheels Mississauga outbound pallet lanes", () => {
   assert.equal(cityAliases.halifax, "nova scotia");
   assert.equal(destinationSuggestions.includes("Nova Scotia"), true);
   assert.equal(destinationSuggestions.includes("nova scotia"), false);
+});
+
+test("adds the 18 Wheels GTA 5 Ton Ontario reference card", () => {
+  assert.deepEqual(wheels18OntarioZones[1], [
+    "vaughan",
+    "toronto",
+    "scarborough",
+    "north york",
+    "mississauga",
+    "etobicoke",
+    "brampton",
+    "woodbridge",
+  ]);
+  assert.deepEqual(rateCards.wheels18.ltl?.[5], [
+    117, 143, 156, 163, 185, 205, 218, 231, 238, 244, 257,
+  ]);
+  assert.deepEqual(rateCards.wheels18.ltl?.[6], [
+    150, 221, 290, 359, 428, 498, 567, 636, 756, 788, 1248,
+  ]);
 });
 
 test("includes postal search coverage for configured destination zones", () => {
