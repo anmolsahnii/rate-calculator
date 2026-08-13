@@ -19,6 +19,7 @@ import {
 } from "./rate-matching";
 import {
   cityAliases,
+  cclsGtaDestinations,
   cclsQuebecRates,
   cclsQuebecZones,
   customerProfiles,
@@ -326,17 +327,17 @@ function resolveCustomerRate(
         };
       }
     } else {
-      const zone = zoneFor(destination, ontarioZones);
-      const regional =
-        zone && zone <= 2
-          ? [43, 33.6, 50.4, 67.2, 79.5, 95.4, 111.3, 127.2, 143.1, 133, 146.3, 159.6]
-          : zone && zone <= 4
-            ? [46.44, 36.2, 54.3, 72.4, 86, 103.2, 120.4, 137.6, 154.8, 144, 158.4, 172.8]
-            : null;
-      if (regional) {
+      const supplyLane = cclsGtaDestinations.includes(destination)
+        ? "gta"
+        : destination === "montreal local" || montrealLocal.includes(destination)
+          ? "montreal"
+          : null;
+      if (supplyLane) {
+        const values = palletLaneCards.ccls?.[supplyLane];
+        if (!values) return null;
         return {
-          base: regional[rateIndex(pallets, regional.length)],
-          note: `CCLS / Uniqlo supplies ${zone && zone <= 2 ? "GTA" : "Southern Ontario"} pallet table`,
+          base: values[rateIndex(pallets, values.length)],
+          note: `CCLS / Uniqlo supplies ${supplyLane === "gta" ? "GTA local" : "Montreal"} pallet table`,
           card,
           fuelMode: "add",
         };

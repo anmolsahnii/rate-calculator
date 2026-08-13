@@ -53,7 +53,7 @@ export const customerProfiles: Array<{
   {
     id: "ccls",
     label: "CCLS / Uniqlo supplies",
-    hint: "CCLS supply and Quebec store-delivery pallet tables.",
+    hint: "Ontario-origin GTA, Ottawa, Montreal and Quebec City supply rates plus Quebec store delivery.",
   },
   {
     id: "efl",
@@ -516,6 +516,40 @@ export const montrealCard = {
 
 export const straightTruckMax5Ton = [148, 167, 195, 195, 750, 900];
 
+export const cclsGtaDestinations = [
+  "gta",
+  "toronto",
+  "scarborough",
+  "north york",
+  "etobicoke",
+  "mississauga",
+  "brampton",
+  "caledon",
+  "bolton",
+  "vaughan",
+  "markham",
+  "richmond hill",
+  "aurora",
+  "newmarket",
+  "pickering",
+  "ajax",
+  "whitby",
+  "oshawa",
+  "oakville",
+  "burlington",
+  "milton",
+  "halton hills",
+  "georgetown",
+  "toronto premium outlets",
+];
+
+export const cclsSupplyRates: Record<string, number[]> = {
+  gta: [43, 33.6, 50.4, 67.2, 79.5, 95.4, 111.3, 127.2, 143.1, 133, 146.3, 159.6],
+  ottawa: [48.1, 56, 84, 112, 130, 156, 182, 208, 234, 240, 264, 288],
+  montreal: [52.91, 61.6, 92.4, 123.2, 143, 171.6, 200.2, 228.8, 257.4, 264, 290.4, 316.8],
+  "quebec city": [63.49, 74, 111, 148, 171.5, 205.8, 240.1, 274.4, 308.7, 317, 348.7, 380.4],
+};
+
 export const palletLaneCards: Partial<
   Record<CustomerId, Record<string, number[]>>
 > = {
@@ -532,11 +566,7 @@ export const palletLaneCards: Partial<
     "niagara-on-the-lake": [143, 210, 276, 342, 408, 474, 540, 606, 720, 750, 900, 400],
     "st catharines": [143, 210, 276, 342, 408, 474, 540, 606, 720, 750, 900, 400],
   },
-  ccls: {
-    ottawa: [48.1, 56, 84, 112, 130, 156, 182, 208, 234, 240, 264, 288],
-    montreal: [52.91, 61.6, 92.4, 123.2, 143, 171.6, 200.2, 228.8, 257.4, 264, 290.4, 316.8],
-    "quebec city": [63.49, 74, 111, 148, 171.5, 205.8, 240.1, 274.4, 308.7, 317, 348.7, 380.4],
-  },
+  ccls: cclsSupplyRates,
   vessi: {
     metrotown: [492, 934, 1306, 1748, 2190, 2632, 3074, 3516, 3958, 4400, 4842, 5284],
     richmond: [492, 934, 1306, 1748, 2190, 2632, 3074, 3516, 3958, 4400, 4842, 5284],

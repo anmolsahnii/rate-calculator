@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   cityAliases,
+  cclsGtaDestinations,
+  cclsSupplyRates,
   destinationSuggestions,
   ftlLtlFuelDestinations,
   palletLaneCards,
@@ -98,6 +100,24 @@ test("adds the 18 Wheels GTA 5 Ton Ontario reference card", () => {
   ]);
   assert.deepEqual(rateCards.wheels18.ltl?.[6], [
     150, 221, 290, 359, 428, 498, 567, 636, 756, 788, 1248,
+  ]);
+});
+
+test("uses the Uniqlo supplies GTA and regional destination card", () => {
+  assert.equal(cclsGtaDestinations.includes("markham"), true);
+  assert.equal(cclsGtaDestinations.includes("ajax"), true);
+  assert.equal(cclsGtaDestinations.includes("toronto premium outlets"), true);
+  assert.deepEqual(cclsSupplyRates.gta, [
+    43, 33.6, 50.4, 67.2, 79.5, 95.4, 111.3, 127.2, 143.1, 133, 146.3, 159.6,
+  ]);
+  assert.deepEqual(palletLaneCards.ccls.ottawa, [
+    48.1, 56, 84, 112, 130, 156, 182, 208, 234, 240, 264, 288,
+  ]);
+  assert.deepEqual(palletLaneCards.ccls.montreal, [
+    52.91, 61.6, 92.4, 123.2, 143, 171.6, 200.2, 228.8, 257.4, 264, 290.4, 316.8,
+  ]);
+  assert.deepEqual(palletLaneCards.ccls["quebec city"], [
+    63.49, 74, 111, 148, 171.5, 205.8, 240.1, 274.4, 308.7, 317, 348.7, 380.4,
   ]);
 });
 
