@@ -11,6 +11,8 @@ const eslintConfig = defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    "outputs/rate-calculator-chrome/**",
+    "work/check-rate-calculator.js",
     "next-env.d.ts",
   ]),
 ]);

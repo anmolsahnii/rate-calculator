@@ -84,8 +84,8 @@ type FuelSchedule = {
 type WorkspaceMode = "quote" | "bulk" | "spots" | "history";
 
 const workspaceModes: Array<{ id: WorkspaceMode; label: string }> = [
-  { id: "quote", label: "Single quote" },
-  { id: "bulk", label: "Bulk quote" },
+  { id: "quote", label: "Quote" },
+  { id: "bulk", label: "Bulk" },
   { id: "spots", label: "Pallet spots" },
   { id: "history", label: "History" },
 ];
@@ -1426,10 +1426,20 @@ export function RateCalculator() {
   const quoteHistoryLabel = matches.length
     ? `${matches.length} exact match${matches.length === 1 ? "" : "es"}`
     : "No exact history";
+  const selectedExtraCount =
+    Object.values(selectedAccessorials).filter(Boolean).length +
+    (helpers > 0 ? 1 : 0);
+  const advancedSummary = selectedExtraCount
+    ? `${selectedExtraCount} extra${selectedExtraCount === 1 ? "" : "s"} selected · ${market}% adjustment`
+    : `No extras · ${market}% adjustment`;
+  const destinationMatchLabel = destination.trim()
+    ? destinationPostalFsa
+      ? `${destinationPostalFsa} postal area · ${destinationLabel}`
+      : `Matched destination · ${destinationLabel}`
+    : "";
   const mobileSteps = [
     { label: "Lane", complete: originReady && Boolean(destination.trim()) },
-    { label: "Load", complete: loadReady },
-    { label: "Service", complete: Boolean(service) },
+    { label: "Load", complete: loadReady && Boolean(service) },
     { label: "Price", complete: quote.suggested !== null },
   ];
   const activeStepIndex = mobileSteps.findIndex((step) => !step.complete);
@@ -1627,8 +1637,8 @@ export function RateCalculator() {
               ))}
             </div>
 
-            <section className="form-section">
-              <div className="form-section-label">Agreement</div>
+            <section className="form-section profile-section">
+              <div className="form-section-label">Pricing profile</div>
             <label className="field">
               <span>Pricing agreement</span>
               <select
@@ -1648,8 +1658,14 @@ export function RateCalculator() {
             </label>
             </section>
 
-            <section className="form-section">
-              <div className="form-section-label">Lane + load</div>
+            <section className="form-section step-section">
+              <div className="step-heading">
+                <span className="step-number">1</span>
+                <div>
+                  <strong>Lane</strong>
+                  <small>Choose the pickup and destination</small>
+                </div>
+              </div>
             <fieldset className="field">
               <legend>Pickup origin</legend>
               <div className="segmented-control two-options">
@@ -1672,7 +1688,7 @@ export function RateCalculator() {
               </div>
             </fieldset>
 
-            <div className="form-grid">
+            <div className="form-grid single-column">
               {originMode === "warehouse" ? (
                 <label className="field">
                   <span>Warehouse</span>
@@ -1726,39 +1742,6 @@ export function RateCalculator() {
                 </label>
               )}
 
-              <label className="field">
-                <span>Skids / pallets</span>
-                <div className="stepper">
-                  <button
-                    type="button"
-                    onClick={() => setPallets((value) => Math.max(0, value - 1))}
-                    aria-label="Remove one pallet"
-                    title="Remove one pallet"
-                  >
-                    −
-                  </button>
-                  <input
-                    type="number"
-                    min={0}
-                    max={60}
-                    step={0.5}
-                    value={pallets}
-                    onChange={(event) =>
-                      setPallets(
-                        Math.max(0, Math.min(60, Number(event.target.value) || 0)),
-                      )
-                    }
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setPallets((value) => Math.min(60, value + 1))}
-                    aria-label="Add one pallet"
-                    title="Add one pallet"
-                  >
-                    +
-                  </button>
-                </div>
-              </label>
             </div>
 
             <label className="field">
@@ -1798,10 +1781,60 @@ export function RateCalculator() {
                 ))}
               </datalist>
             </label>
+            {destinationMatchLabel && (
+              <div className="destination-match" aria-live="polite">
+                <span className="match-dot" aria-hidden="true" />
+                <div>
+                  <strong>{destinationMatchLabel}</strong>
+                  <small>
+                    {quote.rate ? quote.rate.note : "Rate zone checks after the load is entered"}
+                  </small>
+                </div>
+              </div>
+            )}
             </section>
 
-            <section className="form-section">
-              <div className="form-section-label">Service + extras</div>
+            <section className="form-section step-section">
+              <div className="step-heading">
+                <span className="step-number">2</span>
+                <div>
+                  <strong>Load</strong>
+                  <small>Set pallet count and service</small>
+                </div>
+              </div>
+            <label className="field">
+              <span>Skids / pallets</span>
+              <div className="stepper">
+                <button
+                  type="button"
+                  onClick={() => setPallets((value) => Math.max(0, value - 1))}
+                  aria-label="Remove one pallet"
+                  title="Remove one pallet"
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  min={0}
+                  max={60}
+                  step={0.5}
+                  value={pallets}
+                  onChange={(event) =>
+                    setPallets(
+                      Math.max(0, Math.min(60, Number(event.target.value) || 0)),
+                    )
+                  }
+                />
+                <button
+                  type="button"
+                  onClick={() => setPallets((value) => Math.min(60, value + 1))}
+                  aria-label="Add one pallet"
+                  title="Add one pallet"
+                >
+                  +
+                </button>
+              </div>
+            </label>
             <fieldset className="field">
               <legend>Service</legend>
               <div className="segmented-control">
@@ -1822,6 +1855,15 @@ export function RateCalculator() {
               </div>
             </fieldset>
 
+            <details className="advanced-options">
+              <summary>
+                <span>
+                  <strong>Advanced options</strong>
+                  <small>{advancedSummary}</small>
+                </span>
+                <span className="disclosure-icon" aria-hidden="true" />
+              </summary>
+              <div className="advanced-options-body">
             <fieldset className="field">
               <legend>Accessorials</legend>
               <div className="check-grid">
@@ -1956,16 +1998,27 @@ export function RateCalculator() {
                 ))}
               </div>
             </fieldset>
+              </div>
+            </details>
             </section>
 
-            <button
-              className="primary-button"
-              type="button"
-              onClick={showResults}
-              disabled={!destination || !originReady || !loadReady}
-            >
-              Calculate rate
-            </button>
+            <section className="quote-action-block">
+              <div className="step-heading compact">
+                <span className="step-number">3</span>
+                <div>
+                  <strong>Price</strong>
+                  <small>Review the all-in customer quote</small>
+                </div>
+              </div>
+              <button
+                className="primary-button"
+                type="button"
+                onClick={showResults}
+                disabled={!destination || !originReady || !loadReady}
+              >
+                Calculate rate
+              </button>
+            </section>
           </div>
         </aside>
 
@@ -2173,7 +2226,7 @@ export function RateCalculator() {
 
           <section className={`quote-hero-card ${quote.confidence.level}`}>
             <div className="quote-hero-main">
-              <span className="eyebrow">Suggested quote today</span>
+              <span className="eyebrow">All-in customer price</span>
               <strong>
                 {quote.suggested === null
                   ? "Manual quote"
@@ -2189,18 +2242,35 @@ export function RateCalculator() {
                 {copied ? "Copied" : "Copy quote"}
               </button>
             </div>
+            <div className="quote-copy-preview">
+              <span>Customer-ready</span>
+              <p>{quoteLine}</p>
+            </div>
+            <div className="quote-cost-meta" aria-label="Quote cost settings">
+              <span>{quoteFuelLabel}</span>
+              <span>{quoteExtrasLabel}</span>
+              <span>{market}% market adjustment</span>
+            </div>
             <dl className="quote-hero-details">
               <div>
-                <dt>Basis</dt>
+                <dt>Rate card total</dt>
+                <dd>
+                  {quote.tariffTotal === null
+                    ? "Not available"
+                    : currency.format(round5(quote.tariffTotal))}
+                </dd>
+              </div>
+              <div>
+                <dt>Working range</dt>
+                <dd>
+                  {quote.low === null || quote.high === null
+                    ? "Not available"
+                    : `${currency.format(quote.low)} - ${currency.format(quote.high)}`}
+                </dd>
+              </div>
+              <div>
+                <dt>Rate basis</dt>
                 <dd>{rateSourceLabel}</dd>
-              </div>
-              <div>
-                <dt>Fuel</dt>
-                <dd>{quoteFuelLabel}</dd>
-              </div>
-              <div>
-                <dt>Extras</dt>
-                <dd>{quoteExtrasLabel}</dd>
               </div>
               <div>
                 <dt>History</dt>
@@ -2230,55 +2300,15 @@ export function RateCalculator() {
             </div>
           </div>
 
-          <div className="metric-row">
-            <article className="metric-card primary-metric">
-              <span>Rate card total</span>
-              <strong>
-                {quote.tariffTotal === null
-                  ? !loadReady
-                    ? "—"
-                    : destination
-                      ? "No tariff"
-                      : "—"
-                  : currency.format(round5(quote.tariffTotal))}
-              </strong>
-              <small>
-                {quote.rate?.fuelMode === "included"
-                  ? "Contract fuel treatment included"
-                  : quote.rate
-                    ? `${fsc.toFixed(1)}% APPS ${fuelService.toUpperCase()} fuel included`
-                    : !loadReady
-                      ? "No load entered"
-                      : "Waiting for an exact pallet tariff"}
-              </small>
-            </article>
-
-            <article className="metric-card">
-              <span>Previous exact lane</span>
-              <strong>
-                {quote.historyMedian === null
-                  ? "No exact quote"
-                  : currency.format(round5(quote.historyMedian))}
-              </strong>
-              <small>
-                {matches.length
-                  ? `${matches.length} previous match${matches.length === 1 ? "" : "es"}`
-                  : "No exact origin-to-destination match"}
-              </small>
-            </article>
-
-            <article className="metric-card suggested-metric">
-              <span>Suggested quote today</span>
-              <strong>
-                {quote.suggested === null
-                  ? "—"
-                  : currency.format(quote.suggested)}
-              </strong>
-              <small>{market >= 0 ? `+${market}%` : `${market}%`} market adjustment</small>
-            </article>
-          </div>
-
-          <div className="result-details">
+          <details className="pricing-details">
+            <summary>
+              <span>
+                <strong>Price breakdown</strong>
+                <small>Tariff, fuel, extras, market adjustment and range</small>
+              </span>
+              <span className="disclosure-icon" aria-hidden="true" />
+            </summary>
+            <div className="result-details">
             <section className="rate-basis">
               <div className="section-title">
                 <h3>Rate basis</h3>
@@ -2346,17 +2376,8 @@ export function RateCalculator() {
               </strong>
               <p>Range around today&apos;s suggested quote.</p>
             </section>
-          </div>
-
-          <section className="customer-quote">
-            <div>
-              <span className="eyebrow">Customer-ready line</span>
-              <p>{quoteLine}</p>
             </div>
-            <button type="button" onClick={() => void copyQuote()}>
-              {copied ? "Copied" : "Copy quote"}
-            </button>
-          </section>
+          </details>
 
           <details className="evidence">
             <summary>
@@ -2406,10 +2427,16 @@ export function RateCalculator() {
         </div>
         <button
           type="button"
-          onClick={showResults}
+          onClick={() =>
+            quote.suggested === null ? showResults() : void copyQuote()
+          }
           disabled={!destination || !originReady || !loadReady}
         >
-          View quote
+          {quote.suggested === null
+            ? "View quote"
+            : copied
+              ? "Copied"
+              : "Copy quote"}
         </button>
       </div>
     </div>
