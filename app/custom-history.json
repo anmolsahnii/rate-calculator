@@ -1,5 +1,15 @@
 [
   {
+    "date": "2026-08-13",
+    "customer": "Canada Cartage",
+    "origin": "Mississauga",
+    "destination": "Mississauga",
+    "skids": 20,
+    "service": "FTL",
+    "price": 350,
+    "kind": "accepted negotiated quote - short-notice local transfer"
+  },
+  {
     "date": "2026-08-12",
     "customer": "Canada Cartage / Uniqlo",
     "origin": "Mississauga",
