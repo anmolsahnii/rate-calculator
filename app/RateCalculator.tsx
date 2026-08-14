@@ -1001,7 +1001,6 @@ function calculateQuote(input: {
   helpers: number;
   market: number;
   fsc: number;
-  fscReady: boolean;
 }): CalculatedQuote {
   const originReady =
     input.originMode === "warehouse" || Boolean(input.pickupCity.trim());
@@ -1056,21 +1055,14 @@ function calculateQuote(input: {
     0,
   );
   const helperCharge = input.helpers * 150;
-  const confidence =
-    rate?.card.requiresManualFsc && !input.fscReady
-      ? {
-          level: "review" as const,
-          label: "FSC needed",
-          detail: "Enter the current FCA FSC to complete this quote",
-        }
-      : confidenceFor(
-          rate,
-          matches,
-          historyMedian,
-          input.destination,
-          originReady,
-          loadReady,
-        );
+  const confidence = confidenceFor(
+    rate,
+    matches,
+    historyMedian,
+    input.destination,
+    originReady,
+    loadReady,
+  );
 
   if (!input.destination || !originReady || !loadReady) {
     return {
@@ -1106,22 +1098,6 @@ function calculateQuote(input: {
       suggested,
       low: suggested === null ? null : round5(suggested * 0.97),
       high: suggested === null ? null : round5(suggested * 1.08),
-      confidence,
-    };
-  }
-
-  if (rate.card.requiresManualFsc && !input.fscReady) {
-    return {
-      rate,
-      matches,
-      historyMedian,
-      accessorials,
-      helperCharge,
-      fuelCharge: 0,
-      tariffTotal: null,
-      suggested: null,
-      low: null,
-      high: null,
       confidence,
     };
   }
@@ -1343,7 +1319,6 @@ export function RateCalculator() {
   const automaticFsc =
     card.preferredFsc ?? (fuelService === "ftl" ? fuel.tl : fuel.ltl);
   const fsc = fscOverride ?? automaticFsc;
-  const fscReady = !card.requiresManualFsc || fscOverride !== null;
   const originReady =
     originMode === "warehouse" || Boolean(pickupCity.trim());
   const loadReady = pallets > 0 || mode !== "ltl";
@@ -1441,7 +1416,6 @@ export function RateCalculator() {
     helpers,
     market,
     fsc,
-    fscReady,
   });
   const matches = quote.matches;
   const bulkRows: BulkQuoteResult[] = parseBulkQuoteRows(
@@ -1469,7 +1443,6 @@ export function RateCalculator() {
         helpers,
         market,
         fsc: rowFsc,
-        fscReady,
       }),
     };
   });
@@ -1519,16 +1492,9 @@ export function RateCalculator() {
     : quote.historyMedian !== null
       ? "Exact history only"
       : "Live rate needed";
-  const uniqloFscPending = Boolean(
-    quote.rate?.card.requiresManualFsc && !fscReady,
-  );
   const quoteFuelLabel = quote.rate?.fuelMode === "included"
     ? "Fuel included"
-    : uniqloFscPending
-      ? "FCA FSC required"
-      : quote.rate?.card.fscLabel
-        ? `${quote.rate.card.fscLabel} ${fsc.toFixed(1)}%`
-        : `APPS ${fuelService.toUpperCase()} ${fsc.toFixed(1)}%`;
+    : `APPS ${fuelService.toUpperCase()} ${fsc.toFixed(1)}%`;
   const quoteExtras = quote.accessorials + quote.helperCharge;
   const quoteExtrasLabel =
     quoteExtras > 0 ? currency.format(quoteExtras) : "No extras";
@@ -1560,9 +1526,7 @@ export function RateCalculator() {
     !loadReady
       ? "Pallet count is required before preparing a customer quote."
       : quote.suggested === null
-        ? uniqloFscPending
-          ? "Enter the current FCA FSC in Advanced options to complete this Uniqlo quote."
-          : `Please obtain a live rate for ${originLabel} to ${destinationLabel}.`
+        ? `Please obtain a live rate for ${originLabel} to ${destinationLabel}.`
         : `It would cost ${currency.format(quote.suggested)} all in.`;
 
   const reset = () => {
@@ -2077,32 +2041,22 @@ export function RateCalculator() {
               </label>
 
               <label className="field">
-                <span>{card.fscLabel ?? "FSC override"}</span>
+                <span>FSC override</span>
                 <input
                   className="compact-number"
                   type="number"
                   min={0}
                   max={120}
                   step={0.1}
-                  placeholder={card.requiresManualFsc ? "Enter current %" : undefined}
-                  value={
-                    card.requiresManualFsc
-                      ? (fscOverride ?? "")
-                      : Number(fsc.toFixed(1))
-                  }
-                  onChange={(event) => {
-                    const value = event.target.value;
+                  value={Number(fsc.toFixed(1))}
+                  onChange={(event) =>
                     setFscOverride(
-                      value === ""
-                        ? null
-                        : Math.max(0, Math.min(120, Number(value) || 0)),
-                    );
-                  }}
+                      Math.max(0, Math.min(120, Number(event.target.value) || 0)),
+                    )
+                  }
                 />
                 <small>
-                  {card.requiresManualFsc
-                    ? "Required by the Uniqlo FCA rate card"
-                    : mode === "ftl" && fuelService === "ltl"
+                  {mode === "ftl" && fuelService === "ltl"
                     ? "FTL tariff · LTL fuel exception"
                     : `APPS ${fuelService.toUpperCase()} fuel`}
                 </small>
@@ -2356,9 +2310,7 @@ export function RateCalculator() {
               <span className="eyebrow">All-in customer price</span>
               <strong>
                 {quote.suggested === null
-                  ? uniqloFscPending
-                    ? "FSC required"
-                    : "Manual quote"
+                  ? "Manual quote"
                   : currency.format(quote.suggested)}
               </strong>
               <p>{quote.confidence.detail}</p>
@@ -2389,9 +2341,7 @@ export function RateCalculator() {
                 <dt>Rate card total</dt>
                 <dd>
                   {quote.tariffTotal === null
-                    ? uniqloFscPending && quote.rate
-                      ? `${currency.format(quote.rate.base)} base`
-                      : "Not available"
+                    ? "Not available"
                     : currency.format(round5(quote.tariffTotal))}
                 </dd>
               </div>

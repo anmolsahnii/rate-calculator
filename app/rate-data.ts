@@ -23,8 +23,6 @@ export type RateCard = {
   sourceLabel: string;
   fuelMode: FuelMode;
   preferredFsc?: number;
-  requiresManualFsc?: boolean;
-  fscLabel?: string;
   ltl?: Record<number, number[]>;
   ftl?: number[];
   local?: number[];
@@ -90,7 +88,7 @@ export const customerProfiles: Array<{
   {
     id: "uniqlo",
     label: "Uniqlo",
-    hint: "Revised Uniqlo store-delivery rates from Toronto DC; current FCA FSC required.",
+    hint: "Revised Uniqlo store-delivery rates from Toronto DC with live FSC.",
   },
   {
     id: "vessi",
@@ -498,8 +496,6 @@ export const rateCards: Record<CustomerId, RateCard> = {
     effective: "October 8, 2025 to October 8, 2027",
     sourceLabel: "3Myle Uniqlo Store Delivery Rate Proposal Revised 2025 Ver 2.0",
     fuelMode: "add",
-    requiresManualFsc: true,
-    fscLabel: "FCA FSC",
   },
   vessi: {
     label: "Vessi",

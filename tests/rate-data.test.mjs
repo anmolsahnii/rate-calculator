@@ -131,8 +131,8 @@ test("uses the revised Uniqlo store-delivery workbook rates", () => {
     rateCards.uniqlo.effective,
     "October 8, 2025 to October 8, 2027",
   );
-  assert.equal(rateCards.uniqlo.requiresManualFsc, true);
-  assert.equal(rateCards.uniqlo.fscLabel, "FCA FSC");
+  assert.equal(rateCards.uniqlo.fuelMode, "add");
+  assert.equal(rateCards.uniqlo.preferredFsc, undefined);
   assert.deepEqual(uniqloStoreDeliveryRates[1], [
     52, 70, 88, 106, 124, 142, 154, 160, 166, 172, 178, 178,
   ]);
