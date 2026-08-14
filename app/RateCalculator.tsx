@@ -35,6 +35,9 @@ import {
   rateCards,
   spotOntarioZones,
   straightTruckMax5Ton,
+  uniqloCalgaryRates,
+  uniqloStoreDeliveryRates,
+  uniqloStoreDeliveryZones,
   wheels18OntarioZones,
   vessiReturnLaneCards,
   type CustomerId,
@@ -168,6 +171,11 @@ const defaultAccessorials: Record<AccessorialKey, number> = {
   driverAssist: 80,
 };
 
+const uniqloAccessorials: Record<AccessorialKey, number> = {
+  ...defaultAccessorials,
+  appointment: 0,
+};
+
 function rateIndex(pallets: number, max: number) {
   const count = Math.max(1, Math.ceil(pallets || 1));
   if (count >= max) return max - 1;
@@ -260,6 +268,7 @@ function resolveCustomerRate(
   pallets: number,
   service: ServiceMode,
 ): RateResolution | null {
+  const rawDestination = clean(destinationInput);
   const destination = cityKey(destinationInput);
   const postalMontrealLocal = isMontrealLocalPostalCode(destinationInput);
   const postalQuebecCity = isQuebecCityPostalCode(destinationInput);
@@ -270,6 +279,72 @@ function resolveCustomerRate(
     customer === "wheels18" &&
     (warehouse !== "mississauga" || service !== "ltl" || pallets > 11)
   ) {
+    return null;
+  }
+
+  if (customer === "uniqlo" && warehouse === "mississauga") {
+    const calgaryDestination =
+      rawDestination.includes("calgary") &&
+      !rawDestination.includes("edmonton");
+
+    if (service === "ltl" && calgaryDestination) {
+      if (pallets > uniqloCalgaryRates.length) return null;
+      return {
+        base: uniqloCalgaryRates[rateIndex(pallets, uniqloCalgaryRates.length)],
+        note: "Uniqlo Toronto DC to Calgary pallet rate",
+        card,
+        fuelMode: "add",
+        accessorialRates: uniqloAccessorials,
+      };
+    }
+
+    const zone = zoneFor(destination, uniqloStoreDeliveryZones);
+    if (service === "ltl" && zone && pallets <= 34) {
+      const values = uniqloStoreDeliveryRates[zone];
+      const palletCount = Math.max(1, Math.ceil(pallets));
+      const base =
+        zone <= 3 && palletCount > values.length
+          ? Math.floor((palletCount - 1) / values.length) *
+              values[values.length - 1] +
+            values[(palletCount - 1) % values.length]
+          : values[palletCount - 1];
+      return {
+        base,
+        note: `Uniqlo one-store delivery Zone ${zone} from Toronto DC`,
+        card,
+        fuelMode: "add",
+        accessorialRates: uniqloAccessorials,
+      };
+    }
+
+    if (service === "ftl" && calgaryDestination) {
+      return {
+        base: 5010,
+        note: "Uniqlo Toronto DC to Calgary FTL rate",
+        card,
+        fuelMode: "add",
+        accessorialRates: uniqloAccessorials,
+      };
+    }
+
+    if (
+      service === "ftl" &&
+      zone &&
+      zone >= 4 &&
+      pallets > 0 &&
+      pallets <= 34
+    ) {
+      const finalDelivery =
+        uniqloStoreDeliveryRates[zone][Math.ceil(pallets) - 1];
+      return {
+        base: 850 + finalDelivery,
+        note: `Uniqlo FTL linehaul plus Zone ${zone} final delivery`,
+        card,
+        fuelMode: "add",
+        accessorialRates: uniqloAccessorials,
+      };
+    }
+
     return null;
   }
 
@@ -926,6 +1001,7 @@ function calculateQuote(input: {
   helpers: number;
   market: number;
   fsc: number;
+  fscReady: boolean;
 }): CalculatedQuote {
   const originReady =
     input.originMode === "warehouse" || Boolean(input.pickupCity.trim());
@@ -980,14 +1056,21 @@ function calculateQuote(input: {
     0,
   );
   const helperCharge = input.helpers * 150;
-  const confidence = confidenceFor(
-    rate,
-    matches,
-    historyMedian,
-    input.destination,
-    originReady,
-    loadReady,
-  );
+  const confidence =
+    rate?.card.requiresManualFsc && !input.fscReady
+      ? {
+          level: "review" as const,
+          label: "FSC needed",
+          detail: "Enter the current FCA FSC to complete this quote",
+        }
+      : confidenceFor(
+          rate,
+          matches,
+          historyMedian,
+          input.destination,
+          originReady,
+          loadReady,
+        );
 
   if (!input.destination || !originReady || !loadReady) {
     return {
@@ -1023,6 +1106,22 @@ function calculateQuote(input: {
       suggested,
       low: suggested === null ? null : round5(suggested * 0.97),
       high: suggested === null ? null : round5(suggested * 1.08),
+      confidence,
+    };
+  }
+
+  if (rate.card.requiresManualFsc && !input.fscReady) {
+    return {
+      rate,
+      matches,
+      historyMedian,
+      accessorials,
+      helperCharge,
+      fuelCharge: 0,
+      tariffTotal: null,
+      suggested: null,
+      low: null,
+      high: null,
       confidence,
     };
   }
@@ -1244,6 +1343,7 @@ export function RateCalculator() {
   const automaticFsc =
     card.preferredFsc ?? (fuelService === "ftl" ? fuel.tl : fuel.ltl);
   const fsc = fscOverride ?? automaticFsc;
+  const fscReady = !card.requiresManualFsc || fscOverride !== null;
   const originReady =
     originMode === "warehouse" || Boolean(pickupCity.trim());
   const loadReady = pallets > 0 || mode !== "ltl";
@@ -1341,6 +1441,7 @@ export function RateCalculator() {
     helpers,
     market,
     fsc,
+    fscReady,
   });
   const matches = quote.matches;
   const bulkRows: BulkQuoteResult[] = parseBulkQuoteRows(
@@ -1368,6 +1469,7 @@ export function RateCalculator() {
         helpers,
         market,
         fsc: rowFsc,
+        fscReady,
       }),
     };
   });
@@ -1417,9 +1519,16 @@ export function RateCalculator() {
     : quote.historyMedian !== null
       ? "Exact history only"
       : "Live rate needed";
+  const uniqloFscPending = Boolean(
+    quote.rate?.card.requiresManualFsc && !fscReady,
+  );
   const quoteFuelLabel = quote.rate?.fuelMode === "included"
     ? "Fuel included"
-    : `APPS ${fuelService.toUpperCase()} ${fsc.toFixed(1)}%`;
+    : uniqloFscPending
+      ? "FCA FSC required"
+      : quote.rate?.card.fscLabel
+        ? `${quote.rate.card.fscLabel} ${fsc.toFixed(1)}%`
+        : `APPS ${fuelService.toUpperCase()} ${fsc.toFixed(1)}%`;
   const quoteExtras = quote.accessorials + quote.helperCharge;
   const quoteExtrasLabel =
     quoteExtras > 0 ? currency.format(quoteExtras) : "No extras";
@@ -1432,6 +1541,8 @@ export function RateCalculator() {
   const advancedSummary = selectedExtraCount
     ? `${selectedExtraCount} extra${selectedExtraCount === 1 ? "" : "s"} selected · ${market}% adjustment`
     : `No extras · ${market}% adjustment`;
+  const accessorialDisplayRates =
+    quote.rate?.accessorialRates ?? defaultAccessorials;
   const destinationMatchLabel = destination.trim()
     ? destinationPostalFsa
       ? `${destinationPostalFsa} postal area · ${destinationLabel}`
@@ -1449,7 +1560,9 @@ export function RateCalculator() {
     !loadReady
       ? "Pallet count is required before preparing a customer quote."
       : quote.suggested === null
-        ? `Please obtain a live rate for ${originLabel} to ${destinationLabel}.`
+        ? uniqloFscPending
+          ? "Enter the current FCA FSC in Advanced options to complete this Uniqlo quote."
+          : `Please obtain a live rate for ${originLabel} to ${destinationLabel}.`
         : `It would cost ${currency.format(quote.suggested)} all in.`;
 
   const reset = () => {
@@ -1874,7 +1987,7 @@ export function RateCalculator() {
                     onChange={(event) => setTailgate(event.target.checked)}
                   />
                   <span>Tailgate</span>
-                  <small>+$45</small>
+                  <small>+${accessorialDisplayRates.tailgate}</small>
                 </label>
                 <label>
                   <input
@@ -1883,7 +1996,7 @@ export function RateCalculator() {
                     onChange={(event) => setInside(event.target.checked)}
                   />
                   <span>Inside</span>
-                  <small>+$45</small>
+                  <small>+${accessorialDisplayRates.inside}</small>
                 </label>
                 <label>
                   <input
@@ -1892,7 +2005,11 @@ export function RateCalculator() {
                     onChange={(event) => setAppointment(event.target.checked)}
                   />
                   <span>Appointment</span>
-                  <small>+$25</small>
+                  <small>
+                    {accessorialDisplayRates.appointment === 0
+                      ? "Included"
+                      : `+$${accessorialDisplayRates.appointment}`}
+                  </small>
                 </label>
                 <label>
                   <input
@@ -1901,7 +2018,7 @@ export function RateCalculator() {
                     onChange={(event) => setReturns(event.target.checked)}
                   />
                   <span>Pallet return</span>
-                  <small>+$45</small>
+                  <small>+${accessorialDisplayRates.returns}</small>
                 </label>
                 <label>
                   <input
@@ -1910,7 +2027,7 @@ export function RateCalculator() {
                     onChange={(event) => setDunnage(event.target.checked)}
                   />
                   <span>Dunnage removal</span>
-                  <small>+$45</small>
+                  <small>+${accessorialDisplayRates.dunnage}</small>
                 </label>
                 <label>
                   <input
@@ -1919,7 +2036,7 @@ export function RateCalculator() {
                     onChange={(event) => setDriverAssist(event.target.checked)}
                   />
                   <span>Driver assist</span>
-                  <small>+$80</small>
+                  <small>+${accessorialDisplayRates.driverAssist}</small>
                 </label>
               </div>
             </fieldset>
@@ -1960,22 +2077,32 @@ export function RateCalculator() {
               </label>
 
               <label className="field">
-                <span>FSC override</span>
+                <span>{card.fscLabel ?? "FSC override"}</span>
                 <input
                   className="compact-number"
                   type="number"
                   min={0}
                   max={120}
                   step={0.1}
-                  value={Number(fsc.toFixed(1))}
-                  onChange={(event) =>
-                    setFscOverride(
-                      Math.max(0, Math.min(120, Number(event.target.value) || 0)),
-                    )
+                  placeholder={card.requiresManualFsc ? "Enter current %" : undefined}
+                  value={
+                    card.requiresManualFsc
+                      ? (fscOverride ?? "")
+                      : Number(fsc.toFixed(1))
                   }
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setFscOverride(
+                      value === ""
+                        ? null
+                        : Math.max(0, Math.min(120, Number(value) || 0)),
+                    );
+                  }}
                 />
                 <small>
-                  {mode === "ftl" && fuelService === "ltl"
+                  {card.requiresManualFsc
+                    ? "Required by the Uniqlo FCA rate card"
+                    : mode === "ftl" && fuelService === "ltl"
                     ? "FTL tariff · LTL fuel exception"
                     : `APPS ${fuelService.toUpperCase()} fuel`}
                 </small>
@@ -2229,7 +2356,9 @@ export function RateCalculator() {
               <span className="eyebrow">All-in customer price</span>
               <strong>
                 {quote.suggested === null
-                  ? "Manual quote"
+                  ? uniqloFscPending
+                    ? "FSC required"
+                    : "Manual quote"
                   : currency.format(quote.suggested)}
               </strong>
               <p>{quote.confidence.detail}</p>
@@ -2238,7 +2367,11 @@ export function RateCalculator() {
               <span className={`confidence-badge ${quote.confidence.level}`}>
                 {quote.confidence.label}
               </span>
-              <button type="button" onClick={() => void copyQuote()}>
+              <button
+                type="button"
+                onClick={() => void copyQuote()}
+                disabled={quote.suggested === null}
+              >
                 {copied ? "Copied" : "Copy quote"}
               </button>
             </div>
@@ -2256,7 +2389,9 @@ export function RateCalculator() {
                 <dt>Rate card total</dt>
                 <dd>
                   {quote.tariffTotal === null
-                    ? "Not available"
+                    ? uniqloFscPending && quote.rate
+                      ? `${currency.format(quote.rate.base)} base`
+                      : "Not available"
                     : currency.format(round5(quote.tariffTotal))}
                 </dd>
               </div>

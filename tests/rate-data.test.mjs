@@ -13,8 +13,13 @@ import {
   spotGtaPickupOrigins,
   spotOntarioZones,
   straightTruckMax5Ton,
+  uniqloCalgaryRates,
+  uniqloStoreAliases,
+  uniqloStoreDeliveryRates,
+  uniqloStoreDeliveryZones,
   wheels18OntarioZones,
 } from "../app/rate-data.ts";
+import { cityKey, zoneFor } from "../app/rate-matching.ts";
 
 test("uses LTL fuel for every configured Ontario FTL destination", () => {
   const destinations = [
@@ -119,6 +124,59 @@ test("uses the Uniqlo supplies GTA and regional destination card", () => {
   assert.deepEqual(palletLaneCards.ccls["quebec city"], [
     63.49, 74, 111, 148, 171.5, 205.8, 240.1, 274.4, 308.7, 317, 348.7, 380.4,
   ]);
+});
+
+test("uses the revised Uniqlo store-delivery workbook rates", () => {
+  assert.equal(
+    rateCards.uniqlo.effective,
+    "October 8, 2025 to October 8, 2027",
+  );
+  assert.equal(rateCards.uniqlo.requiresManualFsc, true);
+  assert.equal(rateCards.uniqlo.fscLabel, "FCA FSC");
+  assert.deepEqual(uniqloStoreDeliveryRates[1], [
+    52, 70, 88, 106, 124, 142, 154, 160, 166, 172, 178, 178,
+  ]);
+  assert.equal(uniqloStoreDeliveryRates[4].length, 34);
+  assert.equal(uniqloStoreDeliveryRates[4][0], 198);
+  assert.equal(uniqloStoreDeliveryRates[4][12], 396);
+  assert.equal(uniqloStoreDeliveryRates[4][24], 594);
+  assert.equal(uniqloStoreDeliveryRates[5][0], 270);
+  assert.equal(uniqloStoreDeliveryRates[6][24], 2160);
+  assert.deepEqual(uniqloCalgaryRates, [
+    270, 540, 810, 1080, 1350, 1620, 1890, 2160, 2430, 2700, 2970, 3240,
+  ]);
+});
+
+test("matches Uniqlo store names to their workbook delivery zones", () => {
+  assert.equal(uniqloStoreAliases["square one"], "mississauga");
+  assert.equal(cityKey("St Laurent Centre"), "ottawa");
+  assert.equal(cityKey("St-Laurent Centre"), "ottawa");
+  assert.equal(cityKey("Galeries d’Anjou"), "anjou");
+  assert.equal(cityKey("Place Sainte-Foy"), "quebec city");
+  assert.equal(
+    zoneFor(cityKey("Yorkdale Shopping Centre"), uniqloStoreDeliveryZones),
+    1,
+  );
+  assert.equal(
+    zoneFor(cityKey("Mapleview Centre"), uniqloStoreDeliveryZones),
+    2,
+  );
+  assert.equal(
+    zoneFor(cityKey("Upper Canada Mall"), uniqloStoreDeliveryZones),
+    3,
+  );
+  assert.equal(
+    zoneFor(cityKey("Rideau Centre"), uniqloStoreDeliveryZones),
+    4,
+  );
+  assert.equal(
+    zoneFor(cityKey("Galeries d'Anjou"), uniqloStoreDeliveryZones),
+    5,
+  );
+  assert.equal(
+    zoneFor(cityKey("Place Ste Foy"), uniqloStoreDeliveryZones),
+    6,
+  );
 });
 
 test("includes postal search coverage for configured destination zones", () => {

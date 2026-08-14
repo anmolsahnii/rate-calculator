@@ -23,6 +23,8 @@ export type RateCard = {
   sourceLabel: string;
   fuelMode: FuelMode;
   preferredFsc?: number;
+  requiresManualFsc?: boolean;
+  fscLabel?: string;
   ltl?: Record<number, number[]>;
   ftl?: number[];
   local?: number[];
@@ -88,7 +90,7 @@ export const customerProfiles: Array<{
   {
     id: "uniqlo",
     label: "Uniqlo",
-    hint: "Active 2026 Uniqlo store-delivery pallet tables.",
+    hint: "Revised Uniqlo store-delivery rates from Toronto DC; current FCA FSC required.",
   },
   {
     id: "vessi",
@@ -493,9 +495,11 @@ export const rateCards: Record<CustomerId, RateCard> = {
   },
   uniqlo: {
     label: "Uniqlo",
-    effective: "2026",
-    sourceLabel: "Uniqlo New Store Delivery Rate 2026",
+    effective: "October 8, 2025 to October 8, 2027",
+    sourceLabel: "3Myle Uniqlo Store Delivery Rate Proposal Revised 2025 Ver 2.0",
     fuelMode: "add",
+    requiresManualFsc: true,
+    fscLabel: "FCA FSC",
   },
   vessi: {
     label: "Vessi",
@@ -550,6 +554,55 @@ export const cclsSupplyRates: Record<string, number[]> = {
   "quebec city": [63.49, 74, 111, 148, 171.5, 205.8, 240.1, 274.4, 308.7, 317, 348.7, 380.4],
 };
 
+export const uniqloStoreDeliveryZones: Record<number, string[]> = {
+  1: [
+    "toronto",
+    "vaughan",
+    "mississauga",
+    "scarborough",
+    "north york",
+    "brampton",
+    "etobicoke",
+  ],
+  2: ["burlington"],
+  3: ["markham", "oshawa", "newmarket"],
+  4: ["ottawa"],
+  5: [
+    "montreal",
+    "laval",
+    "pointe-claire",
+    "saint-bruno",
+    "brossard",
+    "anjou",
+  ],
+  6: ["quebec city"],
+};
+
+export const uniqloStoreDeliveryRates: Record<number, number[]> = {
+  1: [52, 70, 88, 106, 124, 142, 154, 160, 166, 172, 178, 178],
+  2: [80, 104, 118, 130, 144, 162, 168, 174, 180, 188, 200, 200],
+  3: [106, 130, 142, 148, 168, 186, 198, 210, 216, 222, 234, 234],
+  4: [
+    ...Array(12).fill(198),
+    ...Array(12).fill(396),
+    ...Array(10).fill(594),
+  ],
+  5: [
+    ...Array(12).fill(270),
+    ...Array(12).fill(540),
+    ...Array(10).fill(810),
+  ],
+  6: [
+    ...Array(12).fill(720),
+    ...Array(12).fill(1440),
+    ...Array(10).fill(2160),
+  ],
+};
+
+export const uniqloCalgaryRates = [
+  270, 540, 810, 1080, 1350, 1620, 1890, 2160, 2430, 2700, 2970, 3240,
+];
+
 export const palletLaneCards: Partial<
   Record<CustomerId, Record<string, number[]>>
 > = {
@@ -559,12 +612,6 @@ export const palletLaneCards: Partial<
     saskatoon: [400, 600, 800, 1000, 1300, 1500, 1700],
     "calgary edmonton": [400, 600, 800, 1000, 1300, 1500, 1700],
     vancouver: [450, 650, 850, 1100, 1400, 1700, 2100],
-  },
-  uniqlo: {
-    kitchener: [106, 130, 142, 148, 168, 186, 198, 210, 216, 222, 234, 234],
-    niagara: [143, 210, 276, 342, 408, 474, 540, 606, 720, 750, 900, 400],
-    "niagara-on-the-lake": [143, 210, 276, 342, 408, 474, 540, 606, 720, 750, 900, 400],
-    "st catharines": [143, 210, 276, 342, 408, 474, 540, 606, 720, 750, 900, 400],
   },
   ccls: cclsSupplyRates,
   vessi: {
@@ -624,7 +671,49 @@ export const cclsQuebecRates: Record<number, number[]> = {
   4: [549, 682, 795, 880, 965, 965],
 };
 
+export const uniqloStoreAliases: Record<string, string> = {
+  "yorkdale shopping centre": "toronto",
+  "toronto eaton centre": "toronto",
+  "vaughan mills": "vaughan",
+  "square one": "mississauga",
+  "markville centre": "markham",
+  "oshawa centre": "oshawa",
+  "upper canada": "newmarket",
+  "upper canada mall": "newmarket",
+  "upper canada shopping centre": "newmarket",
+  "first canadian place": "toronto",
+  "montreal eaton centre": "montreal",
+  "carrefour laval": "laval",
+  "fairview pointe claire": "pointe-claire",
+  "pointe claire": "pointe-claire",
+  "cf st bruno": "saint-bruno",
+  "rideau centre": "ottawa",
+  "fairview mall": "north york",
+  bayshore: "ottawa",
+  royalmount: "montreal",
+  "royal mount": "montreal",
+  heartland: "mississauga",
+  "bramalea city": "brampton",
+  "bramalea city centre": "brampton",
+  "sherway mall": "etobicoke",
+  "sherway gardens": "etobicoke",
+  "mapleview centre": "burlington",
+  "galeries d'anjou": "anjou",
+  "galeries d anjou": "anjou",
+  "galeries danjou": "anjou",
+  "place ste foy": "quebec city",
+  "place ste-foy": "quebec city",
+  "place sainte foy": "quebec city",
+  "place sainte-foy": "quebec city",
+  "union station": "toronto",
+  dix30: "brossard",
+  "st laurent centre": "ottawa",
+  "st-laurent centre": "ottawa",
+  "st laurent ottawa": "ottawa",
+};
+
 export const cityAliases: Record<string, string> = {
+  ...uniqloStoreAliases,
   "mississauga warehouse": "mississauga",
   missisauga: "mississauga",
   missiaga: "mississauga",
@@ -848,5 +937,7 @@ export const destinationSuggestions = Array.from(
     ...montrealExterior,
     ...Object.values(palletLaneCards).flatMap((card) => Object.keys(card)),
     ...Object.values(cclsQuebecZones).flat(),
+    ...Object.keys(uniqloStoreAliases),
+    ...Object.values(uniqloStoreDeliveryZones).flat(),
   ].map((destination) => destinationDisplayNames[destination] ?? destination)),
 ).sort((a, b) => a.localeCompare(b));
