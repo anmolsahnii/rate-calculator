@@ -1,5 +1,15 @@
 [
   {
+    "date": "2026-08-14",
+    "customer": "Airvac Industries",
+    "origin": "Burlington",
+    "destination": "Markham + Brampton",
+    "skids": 11,
+    "service": "Straight Truck",
+    "price": 520,
+    "kind": "accepted negotiated quote - 26 ft, 2 stops, Markham tailgate"
+  },
+  {
     "date": "2026-08-13",
     "customer": "Canada Cartage",
     "origin": "Mississauga",
