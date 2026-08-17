@@ -1,5 +1,35 @@
 [
   {
+    "date": "2026-08-17",
+    "customer": "Canada Cartage",
+    "origin": "Markham",
+    "destination": "Mississauga",
+    "skids": 26,
+    "service": "FTL",
+    "price": 350,
+    "kind": "rate confirmation - 53 ft dock sweep"
+  },
+  {
+    "date": "2026-08-17",
+    "customer": "Radiant",
+    "origin": "Scarborough",
+    "destination": "Rosemere + LaSalle",
+    "skids": 2,
+    "service": "LTL",
+    "price": 550,
+    "kind": "accepted quote - 2 oversized skids, 2 stops"
+  },
+  {
+    "date": "2026-08-17",
+    "customer": "Radiant",
+    "origin": "Scarborough",
+    "destination": "Ottawa",
+    "skids": 1,
+    "service": "LTL",
+    "price": 260,
+    "kind": "sent quote"
+  },
+  {
     "date": "2026-08-14",
     "customer": "Airvac Industries",
     "origin": "Burlington",
