@@ -1,5 +1,15 @@
 [
   {
+    "date": "2026-08-18",
+    "customer": "Canada Cartage",
+    "origin": "Brossard",
+    "destination": "Montreal",
+    "skids": 3,
+    "service": "LTL",
+    "price": 245,
+    "kind": "rate confirmation - revised 3-skid local Quebec move"
+  },
+  {
     "date": "2026-08-17",
     "customer": "Canada Cartage",
     "origin": "Markham",
