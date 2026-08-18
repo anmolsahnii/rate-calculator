@@ -617,13 +617,20 @@ export const palletLaneCards: Partial<
   },
 };
 
+const spotKingstonGtaRecurringRates = [
+  275, 325, 385, 455, 525, 590, 660, 725, 790, 850,
+];
+
 export const spotCustomPickupLaneCards: Record<
   string,
   Record<string, number[]>
 > = {
-  kingston: {
-    markham: [275, 325, 385, 455, 525, 590, 660, 725, 790, 850],
-  },
+  kingston: Object.fromEntries(
+    ["gta", ...spotGtaPickupOrigins].map((destination) => [
+      destination,
+      spotKingstonGtaRecurringRates,
+    ]),
+  ),
 };
 
 export const vessiReturnLaneCards: Record<string, number[]> = {
@@ -802,6 +809,7 @@ export const cityAliases: Record<string, string> = {
 };
 
 const destinationDisplayNames: Record<string, string> = {
+  gta: "GTA",
   "nova scotia": "Nova Scotia",
 };
 

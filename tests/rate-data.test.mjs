@@ -64,13 +64,20 @@ test("maps Spot GTA pickup zones from the 5 Ton sheet", () => {
   assert.equal(spotGtaPickupOrigins.includes("kitchener"), false);
 });
 
-test("adds Spot recurring Kingston to GoBolt YYZ5 market lane", () => {
-  assert.deepEqual(spotCustomPickupLaneCards.kingston.markham, [
+test("adds Spot recurring Kingston to GTA market lane", () => {
+  const expectedRates = [
     275, 325, 385, 455, 525, 590, 660, 725, 790, 850,
-  ]);
+  ];
+  assert.deepEqual(spotCustomPickupLaneCards.kingston.gta, expectedRates);
+  assert.deepEqual(spotCustomPickupLaneCards.kingston.markham, expectedRates);
+  assert.deepEqual(spotCustomPickupLaneCards.kingston.toronto, expectedRates);
+  assert.deepEqual(spotCustomPickupLaneCards.kingston.mississauga, expectedRates);
+  assert.deepEqual(spotCustomPickupLaneCards.kingston.brampton, expectedRates);
+  assert.deepEqual(spotCustomPickupLaneCards.kingston.vaughan, expectedRates);
   assert.equal(cityAliases.yyz5, "markham");
   assert.equal(cityAliases["gobolt yyz5"], "markham");
   assert.equal(cityKey("GoBolt YYZ5"), "markham");
+  assert.equal(destinationSuggestions.includes("GTA"), true);
   assert.equal(destinationSuggestions.includes("GoBolt YYZ5"), true);
 });
 
