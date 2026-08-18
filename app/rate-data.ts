@@ -617,6 +617,15 @@ export const palletLaneCards: Partial<
   },
 };
 
+export const spotCustomPickupLaneCards: Record<
+  string,
+  Record<string, number[]>
+> = {
+  kingston: {
+    markham: [275, 325, 385, 455, 525, 590, 660, 725, 790, 850],
+  },
+};
+
 export const vessiReturnLaneCards: Record<string, number[]> = {
   metrotown: [492, 934, 1306, 1748, 2190, 2632, 3074, 3516, 3958, 4400, 4842, 5284],
   richmond: [492, 934, 1306, 1748, 2190, 2632, 3074, 3516, 3958, 4400, 4842, 5284],
@@ -778,6 +787,10 @@ export const cityAliases: Record<string, string> = {
   "st. catherine": "st catharines",
   "saint catherine": "st catharines",
   "st. catharines": "st catharines",
+  yyz5: "markham",
+  "gobolt yyz5": "markham",
+  "gobolt markham": "markham",
+  "markham warehouse": "markham",
   ns: "nova scotia",
   "nova scotia": "nova scotia",
   halifax: "nova scotia",
@@ -931,7 +944,9 @@ export const destinationSuggestions = Array.from(
     ...Object.values(ftlZones).flat(),
     ...montrealLocal,
     ...montrealExterior,
+    "GoBolt YYZ5",
     ...Object.values(palletLaneCards).flatMap((card) => Object.keys(card)),
+    ...Object.values(spotCustomPickupLaneCards).flatMap((card) => Object.keys(card)),
     ...Object.values(cclsQuebecZones).flat(),
     ...Object.keys(uniqloStoreAliases),
     ...Object.values(uniqloStoreDeliveryZones).flat(),

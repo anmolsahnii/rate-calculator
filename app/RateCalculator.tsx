@@ -33,6 +33,7 @@ import {
   palletLaneCards,
   postalCodeSuggestions,
   rateCards,
+  spotCustomPickupLaneCards,
   spotOntarioZones,
   straightTruckMax5Ton,
   uniqloCalgaryRates,
@@ -73,6 +74,7 @@ type RateResolution = {
   note: string;
   card: RateCard;
   fuelMode: FuelMode;
+  marketAdjustmentMode?: "add" | "included";
   accessorialRates?: Record<AccessorialKey, number>;
   includedAccessorialIds?: AccessorialKey[];
 };
@@ -736,6 +738,21 @@ function resolveCustomPickupRate(
   const destination = cityKey(destinationInput);
 
   if (
+    customer === "spot" &&
+    service === "ltl" &&
+    spotCustomPickupLaneCards[pickup]?.[destination]
+  ) {
+    const values = spotCustomPickupLaneCards[pickup][destination];
+    return {
+      base: values[rateIndex(pallets, values.length)],
+      note: `Spot recurring market lane from ${cityDisplayName(pickupInput)} to ${cityDisplayName(destinationInput)}`,
+      card: rateCards.spot,
+      fuelMode: "included",
+      marketAdjustmentMode: "included",
+    };
+  }
+
+  if (
     customer === "vessi" &&
     service === "ltl" &&
     destination === "mississauga" &&
@@ -1104,7 +1121,10 @@ function calculateQuote(input: {
 
   const fuelCharge = rate.fuelMode === "included" ? 0 : rate.base * (input.fsc / 100);
   const tariffTotal = rate.base + fuelCharge + accessorials + helperCharge;
-  const suggested = round5(tariffTotal * (1 + input.market / 100));
+  const suggested =
+    rate.marketAdjustmentMode === "included"
+      ? round5(tariffTotal)
+      : round5(tariffTotal * (1 + input.market / 100));
   return {
     rate,
     matches,

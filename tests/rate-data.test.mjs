@@ -10,6 +10,7 @@ import {
   montrealExterior,
   postalCodeSuggestions,
   rateCards,
+  spotCustomPickupLaneCards,
   spotGtaPickupOrigins,
   spotOntarioZones,
   straightTruckMax5Ton,
@@ -61,6 +62,16 @@ test("maps Spot GTA pickup zones from the 5 Ton sheet", () => {
   assert.equal(spotGtaPickupOrigins.includes("north york"), true);
   assert.equal(spotGtaPickupOrigins.includes("richmond hill"), true);
   assert.equal(spotGtaPickupOrigins.includes("kitchener"), false);
+});
+
+test("adds Spot recurring Kingston to GoBolt YYZ5 market lane", () => {
+  assert.deepEqual(spotCustomPickupLaneCards.kingston.markham, [
+    275, 325, 385, 455, 525, 590, 660, 725, 790, 850,
+  ]);
+  assert.equal(cityAliases.yyz5, "markham");
+  assert.equal(cityAliases["gobolt yyz5"], "markham");
+  assert.equal(cityKey("GoBolt YYZ5"), "markham");
+  assert.equal(destinationSuggestions.includes("GoBolt YYZ5"), true);
 });
 
 test("adds 18 Wheels Mississauga outbound pallet lanes", () => {
