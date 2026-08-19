@@ -1,5 +1,25 @@
 [
   {
+    "date": "2026-08-19",
+    "customer": "Nippon Express",
+    "origin": "Mississauga",
+    "destination": "Alliston",
+    "skids": 3,
+    "service": "LTL",
+    "price": 340,
+    "kind": "confirmed same-day quote - dock to dock, 3 crates"
+  },
+  {
+    "date": "2026-08-18",
+    "customer": "Canada Cartage / Uniqlo",
+    "origin": "Toronto",
+    "destination": "Toronto",
+    "skids": 1,
+    "service": "LTL",
+    "price": 95,
+    "kind": "rate confirmation - delivered local store transfer"
+  },
+  {
     "date": "2026-08-18",
     "customer": "Canada Cartage",
     "origin": "Brossard",
