@@ -1,36 +1,41 @@
 {
   "automation_id": "update-rate-calculator-from-gmail-quotes",
-  "last_successful_run": "2026-08-11T15:01:00Z",
-  "review_window_start": "2026-08-07T15:00:47Z",
-  "review_window_end": "2026-08-11T15:01:00Z",
+  "last_successful_run": "2026-08-19T15:00:42Z",
+  "review_window_start": "2026-08-18T15:00:00Z",
+  "review_window_end": "2026-08-19T15:00:42Z",
   "reviewed_high_level": {
     "gmail_searches": [
-      "recent logistics and rate terms across all mail since the last run",
-      "sent quote language with all-in prices",
-      "rate confirmations and shipment updates with pallet or skid details",
-      "customer-specific lane terms for Canada Cartage, Radiant, Farm Boy, Hellmann, and Nippon"
+      "recent logistics and rate terms since the last successful run",
+      "sent all-in quote language and confirmations",
+      "rate confirmations and delivered shipment updates",
+      "customer-specific quote activity for Nippon Express, Canada Cartage / Uniqlo, Crayford, and related LTL work"
     ],
-    "threads_read": 9
+    "threads_read": 4
   },
-  "normalized_facts_added": 11,
+  "normalized_facts_added": 2,
   "notes": [
-    "Stored eleven normalized lane, pallet/service, and price facts only.",
-    "Added unique city-level Welland-to-Farm-Boy quote evidence once per destination city to avoid overweighting repeated stores in the same quote batch.",
-    "Added the weekly Markham-to-Mississauga FTL rate confirmation using zero skids so the existing FTL matching rule is preserved.",
-    "Added clear Mississauga local-transfer and Nippon Waterloo-to-Alliston LTL evidence.",
-    "Skipped Montreal inside/early-delivery, Ottawa inside/appointment, Brossard accessorial-heavy, and unaccepted 11-skid Markham follow-up pricing because those would distort base history without explicit accessorial modeling.",
+    "Added Nippon Express Mississauga-to-Alliston/New Tecumseth 3-piece same-day LTL quote at $340 all in.",
+    "Added Canada Cartage / Uniqlo Toronto-to-Toronto 1-skid local LTL rate confirmation at $95.",
+    "Added New Tecumseth typo/alias handling and L9R postal-prefix matching to Alliston.",
+    "Skipped Crayford GTA truck request and Uniqlo Hillcrest fixture request because they had operational confirmations but no clear price.",
     "No email bodies, message IDs, contact details, or raw sensitive content are stored."
   ],
+  "validation": [
+    "pnpm test",
+    "pnpm run build:standalone",
+    "copied outputs/github-pages/index.html to root index.html"
+  ],
+  "commit": "3af845d",
   "what_could_be_better": {
     "can_do_automatically": [
-      "Continue de-duplicating same-batch quote tables into one city-level lane per price so a single bulk quote does not dominate the median.",
-      "Keep accessorial-heavy or timed-delivery quotes out of base history until the calculator has separate fields for those conditions.",
-      "Watch for repeats on the weekly Markham FTL and Farm Boy Welland lanes; after several confirmations they can become proper rate-card rows instead of only history evidence."
+      "Keep adding confirmed same-day quotes as exact history instead of changing base tariffs from one-off evidence.",
+      "Add aliases/postal prefixes when a confirmed lane uses a city name, borough name, or common misspelling.",
+      "Continue skipping operational-only confirmations until the actual customer price is visible."
     ],
     "needs_approval": [
-      "Confirm whether Montreal local inside or timed retail deliveries should get a separate surcharge/rule based on the $395 JD Sports quote.",
-      "Confirm whether Farm Boy / Radiant Welland should become its own customer profile or pickup-origin shortcut.",
-      "Confirm whether Canada Cartage / Uniqlo accessorial-inclusive quotes should be stored in a separate accessorial history instead of skipped or mixed into base history."
+      "Decide whether Canada Cartage / Uniqlo local store transfers should become a protected customer-specific mini rate card instead of general history.",
+      "Decide whether same-day LTL quotes should carry a visible same-day surcharge or confidence note in the calculator.",
+      "Decide whether tall-skid requests, such as 92-inch freight, need a separate warning/accessorial field."
     ]
   }
 }
