@@ -5,8 +5,10 @@ import {
   cclsGtaDestinations,
   cclsSupplyRates,
   destinationSuggestions,
+  fuelCalibratedCustomPickupLaneFsc,
   fuelCalibratedPalletLaneFsc,
   ftlLtlFuelDestinations,
+  includedFscForCustomPickupLane,
   includedFscForPalletLane,
   palletLaneCards,
   montrealExterior,
@@ -68,7 +70,7 @@ test("maps Spot GTA pickup zones from the 5 Ton sheet", () => {
 
 test("adds Spot recurring Kingston to GTA market lane", () => {
   const expectedRates = [
-    275, 325, 385, 455, 525, 590, 660, 725, 790, 850,
+    275, 350, 385, 455, 525, 590, 660, 725, 790, 850,
   ];
   assert.deepEqual(spotCustomPickupLaneCards.kingston.gta, expectedRates);
   assert.deepEqual(spotCustomPickupLaneCards.kingston.markham, expectedRates);
@@ -79,6 +81,15 @@ test("adds Spot recurring Kingston to GTA market lane", () => {
   assert.equal(cityAliases.yyz5, "markham");
   assert.equal(cityAliases["gobolt yyz5"], "markham");
   assert.equal(cityKey("GoBolt YYZ5"), "markham");
+  assert.equal(fuelCalibratedCustomPickupLaneFsc.spot.kingston.markham, 35.4);
+  assert.equal(
+    includedFscForCustomPickupLane("spot", "kingston", "markham"),
+    35.4,
+  );
+  assert.equal(
+    includedFscForCustomPickupLane("spot", "kingston", "kitchener"),
+    null,
+  );
   assert.equal(destinationSuggestions.includes("GTA"), true);
   assert.equal(destinationSuggestions.includes("GoBolt YYZ5"), true);
 });

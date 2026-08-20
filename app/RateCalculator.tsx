@@ -24,6 +24,7 @@ import {
   cclsQuebecZones,
   customerProfiles,
   destinationSuggestions,
+  includedFscForCustomPickupLane,
   ftlLtlFuelDestinations,
   ftlZones,
   includedFscForPalletLane,
@@ -753,11 +754,23 @@ function resolveCustomPickupRate(
     spotCustomPickupLaneCards[pickup]?.[destination]
   ) {
     const values = spotCustomPickupLaneCards[pickup][destination];
+    const quotedTotal = values[rateIndex(pallets, values.length)];
+    const includedFsc = includedFscForCustomPickupLane(
+      customer,
+      pickup,
+      destination,
+    );
     return {
-      base: values[rateIndex(pallets, values.length)],
-      note: `Spot recurring market lane from ${cityDisplayName(pickupInput)} to ${cityDisplayName(destinationInput)}`,
+      base:
+        includedFsc === null
+          ? quotedTotal
+          : quotedTotal / (1 + includedFsc / 100),
+      note:
+        includedFsc === null
+          ? `Spot recurring market lane from ${cityDisplayName(pickupInput)} to ${cityDisplayName(destinationInput)}`
+          : `Spot recurring market lane from ${cityDisplayName(pickupInput)} to ${cityDisplayName(destinationInput)}, fuel calibrated from ${includedFsc}% FSC`,
       card: rateCards.spot,
-      fuelMode: "included",
+      fuelMode: includedFsc === null ? "included" : rateCards.spot.fuelMode,
       marketAdjustmentMode: "included",
     };
   }

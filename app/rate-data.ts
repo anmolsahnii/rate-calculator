@@ -636,7 +636,7 @@ export function includedFscForPalletLane(
 }
 
 const spotKingstonGtaRecurringRates = [
-  275, 325, 385, 455, 525, 590, 660, 725, 790, 850,
+  275, 350, 385, 455, 525, 590, 660, 725, 790, 850,
 ];
 
 export const spotCustomPickupLaneCards: Record<
@@ -650,6 +650,29 @@ export const spotCustomPickupLaneCards: Record<
     ]),
   ),
 };
+
+export const fuelCalibratedCustomPickupLaneFsc: Partial<
+  Record<CustomerId, Record<string, Record<string, number>>>
+> = {
+  spot: {
+    kingston: Object.fromEntries(
+      ["gta", ...spotGtaPickupOrigins].map((destination) => [
+        destination,
+        35.4,
+      ]),
+    ),
+  },
+};
+
+export function includedFscForCustomPickupLane(
+  customer: CustomerId,
+  pickup: string,
+  destination: string,
+) {
+  return (
+    fuelCalibratedCustomPickupLaneFsc[customer]?.[pickup]?.[destination] ?? null
+  );
+}
 
 export const vessiReturnLaneCards: Record<string, number[]> = {
   metrotown: [492, 934, 1306, 1748, 2190, 2632, 3074, 3516, 3958, 4400, 4842, 5284],

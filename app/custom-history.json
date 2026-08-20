@@ -1,5 +1,35 @@
 [
   {
+    "date": "2026-08-20",
+    "customer": "Radiant",
+    "origin": "Kingston, ON",
+    "destination": "Delta, BC",
+    "skids": 1,
+    "service": "LTL",
+    "price": 690,
+    "kind": "sent quote - all in"
+  },
+  {
+    "date": "2026-08-20",
+    "customer": "Radiant",
+    "origin": "Kingston, ON",
+    "destination": "Markham, ON",
+    "skids": 2,
+    "service": "LTL",
+    "price": 350,
+    "kind": "sent quote - all in"
+  },
+  {
+    "date": "2026-08-20",
+    "customer": "Radiant",
+    "origin": "Woodbridge, ON",
+    "destination": "Montreal, QC",
+    "skids": null,
+    "service": "Dedicated",
+    "price": 615,
+    "kind": "sent quote - dedicated appointment, all in"
+  },
+  {
     "date": "2026-08-19",
     "customer": "Nippon Express",
     "origin": "Mississauga",
