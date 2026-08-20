@@ -602,6 +602,9 @@ export const uniqloCalgaryRates = [
 export const palletLaneCards: Partial<
   Record<CustomerId, Record<string, number[]>>
 > = {
+  spot: {
+    kingston: [285, 350, 420, 490, 555, 595, 665, 735, 800, 865],
+  },
   wheels18: {
     "nova scotia": [350, 450, 600, 750, 900, 1100, 1200],
     winnipeg: [350, 450, 600, 750, 900, 1100, 1200],

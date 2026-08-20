@@ -81,6 +81,13 @@ test("adds Spot recurring Kingston to GTA market lane", () => {
   assert.equal(destinationSuggestions.includes("GoBolt YYZ5"), true);
 });
 
+test("adds Spot Mississauga to Kingston market pallet lane", () => {
+  assert.deepEqual(palletLaneCards.spot.kingston, [
+    285, 350, 420, 490, 555, 595, 665, 735, 800, 865,
+  ]);
+  assert.equal(cityKey("Kingston, ON K7M 8T5"), "kingston");
+});
+
 test("adds 18 Wheels Mississauga outbound pallet lanes", () => {
   assert.equal(rateCards.wheels18.fuelMode, "included");
   assert.deepEqual(palletLaneCards.wheels18["nova scotia"], [
