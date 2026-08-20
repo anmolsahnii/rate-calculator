@@ -26,6 +26,7 @@ import {
   destinationSuggestions,
   ftlLtlFuelDestinations,
   ftlZones,
+  isAllInPalletLane,
   montrealCard,
   montrealExterior,
   montrealLocal,
@@ -375,11 +376,13 @@ function resolveCustomerRate(
     if (customer === "wheels18" && pallets > 7) return null;
 
     const values = palletTable[destination];
+    const allInLane = isAllInPalletLane(customer, destination);
     return {
       base: values[rateIndex(pallets, values.length)],
       note: `${card.label} exact destination pallet table`,
       card,
-      fuelMode: card.fuelMode,
+      fuelMode: allInLane ? "included" : card.fuelMode,
+      marketAdjustmentMode: allInLane ? "included" : undefined,
     };
   }
 

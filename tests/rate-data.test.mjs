@@ -6,6 +6,7 @@ import {
   cclsSupplyRates,
   destinationSuggestions,
   ftlLtlFuelDestinations,
+  isAllInPalletLane,
   palletLaneCards,
   montrealExterior,
   postalCodeSuggestions,
@@ -86,6 +87,8 @@ test("adds Spot Mississauga to Kingston market pallet lane", () => {
     285, 350, 420, 490, 555, 595, 665, 735, 800, 865,
   ]);
   assert.equal(cityKey("Kingston, ON K7M 8T5"), "kingston");
+  assert.equal(isAllInPalletLane("spot", "kingston"), true);
+  assert.equal(isAllInPalletLane("spot", "ottawa"), false);
 });
 
 test("adds 18 Wheels Mississauga outbound pallet lanes", () => {

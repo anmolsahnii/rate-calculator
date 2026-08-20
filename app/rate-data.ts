@@ -620,6 +620,10 @@ export const palletLaneCards: Partial<
   },
 };
 
+export function isAllInPalletLane(customer: CustomerId, destination: string) {
+  return customer === "spot" && destination === "kingston";
+}
+
 const spotKingstonGtaRecurringRates = [
   275, 325, 385, 455, 525, 590, 660, 725, 790, 850,
 ];
