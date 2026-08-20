@@ -620,8 +620,19 @@ export const palletLaneCards: Partial<
   },
 };
 
-export function isAllInPalletLane(customer: CustomerId, destination: string) {
-  return customer === "spot" && destination === "kingston";
+export const fuelCalibratedPalletLaneFsc: Partial<
+  Record<CustomerId, Record<string, number>>
+> = {
+  spot: {
+    kingston: 35.4,
+  },
+};
+
+export function includedFscForPalletLane(
+  customer: CustomerId,
+  destination: string,
+) {
+  return fuelCalibratedPalletLaneFsc[customer]?.[destination] ?? null;
 }
 
 const spotKingstonGtaRecurringRates = [

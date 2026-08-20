@@ -26,7 +26,7 @@ import {
   destinationSuggestions,
   ftlLtlFuelDestinations,
   ftlZones,
-  isAllInPalletLane,
+  includedFscForPalletLane,
   montrealCard,
   montrealExterior,
   montrealLocal,
@@ -376,13 +376,20 @@ function resolveCustomerRate(
     if (customer === "wheels18" && pallets > 7) return null;
 
     const values = palletTable[destination];
-    const allInLane = isAllInPalletLane(customer, destination);
+    const quotedTotal = values[rateIndex(pallets, values.length)];
+    const includedFsc = includedFscForPalletLane(customer, destination);
     return {
-      base: values[rateIndex(pallets, values.length)],
-      note: `${card.label} exact destination pallet table`,
+      base:
+        includedFsc === null
+          ? quotedTotal
+          : quotedTotal / (1 + includedFsc / 100),
+      note:
+        includedFsc === null
+          ? `${card.label} exact destination pallet table`
+          : `${card.label} exact destination pallet table, fuel calibrated from ${includedFsc}% FSC`,
       card,
-      fuelMode: allInLane ? "included" : card.fuelMode,
-      marketAdjustmentMode: allInLane ? "included" : undefined,
+      fuelMode: card.fuelMode,
+      marketAdjustmentMode: includedFsc === null ? undefined : "included",
     };
   }
 
