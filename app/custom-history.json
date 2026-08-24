@@ -1,5 +1,55 @@
 [
   {
+    "date": "2026-08-21",
+    "customer": "Canada Cartage / Uniqlo",
+    "origin": "Mississauga",
+    "destination": "Etobicoke",
+    "skids": null,
+    "service": "Straight Truck",
+    "price": 425,
+    "kind": "sent quote - per truck, weekend tailgate store delivery"
+  },
+  {
+    "date": "2026-08-20",
+    "customer": "Canada Cartage",
+    "origin": "Brampton",
+    "destination": "Cowansville, QC",
+    "skids": 25,
+    "service": "FTL",
+    "price": 1525,
+    "kind": "sent quote - 53 ft, appointment, all in"
+  },
+  {
+    "date": "2026-08-20",
+    "customer": "Canada Cartage",
+    "origin": "Brampton",
+    "destination": "Cowansville, QC",
+    "skids": 25,
+    "service": "Straight Truck",
+    "price": 1240,
+    "kind": "sent quote - straight truck, appointment, all in"
+  },
+  {
+    "date": "2026-08-20",
+    "customer": "Hellmann",
+    "origin": "Cambridge",
+    "destination": "Chalk River",
+    "skids": 1,
+    "service": "Straight Truck",
+    "price": 1275,
+    "kind": "sent quote - expedite, all in"
+  },
+  {
+    "date": "2026-08-20",
+    "customer": "Radiant",
+    "origin": "Welland, ON",
+    "destination": "Ottawa, ON",
+    "skids": 1,
+    "service": "LTL",
+    "price": 285,
+    "kind": "sent quote - all in"
+  },
+  {
     "date": "2026-08-20",
     "customer": "Radiant",
     "origin": "Kingston, ON",
