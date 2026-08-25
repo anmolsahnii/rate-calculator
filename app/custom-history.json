@@ -2,6 +2,46 @@
   {
     "date": "2026-08-24",
     "customer": "Radiant",
+    "origin": "Mississauga, ON",
+    "destination": "Kingston, ON",
+    "skids": 1,
+    "service": "LTL",
+    "price": 310,
+    "kind": "sent quote - all in, 48 x 40 x 79, 441 lb, pickup Thursday deliver Friday"
+  },
+  {
+    "date": "2026-08-24",
+    "customer": "Canada Cartage / Uniqlo",
+    "origin": "Mississauga",
+    "destination": "Mount Royal, QC",
+    "skids": 1,
+    "service": "LTL",
+    "price": 385,
+    "kind": "sent quote - all in, 74 x 52 x 24, 1600 lb, next-day"
+  },
+  {
+    "date": "2026-08-24",
+    "customer": "Canada Cartage / Uniqlo",
+    "origin": "Brossard, QC",
+    "destination": "Mississauga",
+    "skids": 10,
+    "service": "Straight Truck",
+    "price": 1050,
+    "kind": "sent quote - one straight truck, all in"
+  },
+  {
+    "date": "2026-08-24",
+    "customer": "Gray Global",
+    "origin": "Brampton",
+    "destination": "Ottawa",
+    "skids": 2,
+    "service": "LTL",
+    "price": 580,
+    "kind": "sent quote - all in, white glove delivery to 17th floor"
+  },
+  {
+    "date": "2026-08-24",
+    "customer": "Radiant",
     "origin": "Concord, ON",
     "destination": "Ottawa, ON",
     "skids": 4,
