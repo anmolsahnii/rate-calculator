@@ -8,6 +8,13 @@ import {
   fuelCalibratedCustomPickupLaneFsc,
   fuelCalibratedPalletLaneFsc,
   ftlLtlFuelDestinations,
+  goboltFromGtaFtlRates,
+  goboltFromGtaRates,
+  goboltFromMontrealFtlRates,
+  goboltFromMontrealRates,
+  goboltFromOttawaFtlRates,
+  goboltFromOttawaRates,
+  goboltKingstonToGtaRates,
   includedFscForCustomPickupLane,
   includedFscForPalletLane,
   palletLaneCards,
@@ -102,6 +109,40 @@ test("adds Spot Mississauga to Kingston market pallet lane", () => {
   assert.equal(fuelCalibratedPalletLaneFsc.spot.kingston, 35.4);
   assert.equal(includedFscForPalletLane("spot", "kingston"), 35.4);
   assert.equal(includedFscForPalletLane("spot", "ottawa"), null);
+});
+
+test("uses the GoBolt fuel-included pallet rate card", () => {
+  assert.equal(rateCards.gobolt.fuelMode, "included");
+  assert.deepEqual(goboltFromGtaRates.ottawa, [
+    150, 221, 290, 359, 428, 498, 567, 636, 756, 788,
+  ]);
+  assert.deepEqual(goboltFromGtaRates.montreal, [
+    169, 263, 356, 444, 513, 606, 694, 775, 869, 956,
+  ]);
+  assert.deepEqual(goboltFromGtaRates["quebec city"], [
+    289, 383, 476, 564, 633, 726, 814, 895, 989, 1076,
+  ]);
+  assert.deepEqual(goboltFromMontrealRates.gta, [
+    155, 235, 315, 395, 475, 525, 575, 625, 675, 725,
+  ]);
+  assert.deepEqual(goboltFromMontrealRates.ottawa, [
+    135, 195, 255, 315, 375, 415, 455, 495, 535, 575,
+  ]);
+  assert.deepEqual(goboltFromOttawaRates.gta, goboltFromMontrealRates.gta);
+  assert.deepEqual(
+    goboltFromOttawaRates.montreal,
+    goboltFromMontrealRates.ottawa,
+  );
+  assert.deepEqual(goboltKingstonToGtaRates, [
+    275, 325, 385, 455, 525, 590, 660, 725, 790, 850,
+  ]);
+  assert.equal(goboltFromGtaFtlRates.ottawa, 1248);
+  assert.equal(goboltFromGtaFtlRates.montreal, 1310);
+  assert.equal(goboltFromGtaFtlRates["quebec city"], 1950);
+  assert.equal(goboltFromMontrealFtlRates.gta, 900);
+  assert.equal(goboltFromMontrealFtlRates.ottawa, 750);
+  assert.equal(goboltFromOttawaFtlRates.gta, 900);
+  assert.equal(goboltFromOttawaFtlRates.montreal, 750);
 });
 
 test("adds 18 Wheels Mississauga outbound pallet lanes", () => {

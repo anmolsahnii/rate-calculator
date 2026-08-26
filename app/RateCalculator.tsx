@@ -24,6 +24,13 @@ import {
   cclsQuebecZones,
   customerProfiles,
   destinationSuggestions,
+  goboltFromGtaFtlRates,
+  goboltFromGtaRates,
+  goboltFromMontrealFtlRates,
+  goboltFromMontrealRates,
+  goboltFromOttawaFtlRates,
+  goboltFromOttawaRates,
+  goboltKingstonToGtaRates,
   includedFscForCustomPickupLane,
   ftlLtlFuelDestinations,
   ftlZones,
@@ -278,6 +285,64 @@ function resolveCustomerRate(
   const postalQuebecCity = isQuebecCityPostalCode(destinationInput);
   const card = rateCards[customer];
   const palletTable = palletLaneCards[customer];
+
+  if (customer === "gobolt") {
+    const lane = goboltDestinationLane(destinationInput);
+    if (warehouse === "mississauga") {
+      if (
+        service === "ltl" &&
+        lane &&
+        lane !== "gta" &&
+        goboltFromGtaRates[lane]
+      ) {
+        const values = goboltFromGtaRates[lane];
+        return {
+          base: values[rateIndex(pallets, values.length)],
+          note: `GoBolt from GTA to ${cityDisplayName(lane)} pallet table`,
+          card,
+          fuelMode: "included",
+        };
+      }
+
+      if (
+        service === "ftl" &&
+        lane &&
+        lane !== "gta" &&
+        goboltFromGtaFtlRates[lane] !== undefined
+      ) {
+        return {
+          base: goboltFromGtaFtlRates[lane],
+          note: `GoBolt from GTA to ${cityDisplayName(lane)} FTL rate`,
+          card,
+          fuelMode: "included",
+        };
+      }
+    }
+
+    if (warehouse === "montreal") {
+      const montrealLane = lane === "gta" || lane === "ottawa" ? lane : null;
+      if (service === "ltl" && montrealLane) {
+        const values = goboltFromMontrealRates[montrealLane];
+        return {
+          base: values[rateIndex(pallets, values.length)],
+          note: `GoBolt from Montreal to ${cityDisplayName(montrealLane)} pallet table`,
+          card,
+          fuelMode: "included",
+        };
+      }
+
+      if (service === "ftl" && montrealLane) {
+        return {
+          base: goboltFromMontrealFtlRates[montrealLane],
+          note: `GoBolt from Montreal to ${cityDisplayName(montrealLane)} FTL rate`,
+          card,
+          fuelMode: "included",
+        };
+      }
+    }
+
+    return null;
+  }
 
   if (
     customer === "wheels18" &&
@@ -689,52 +754,26 @@ function resolveCustomerRate(
     };
   }
 
+  return null;
+}
+
+type GoboltDestinationLane = "gta" | "montreal" | "ottawa" | "quebec city";
+
+function goboltDestinationLane(value: string): GoboltDestinationLane | null {
+  const destination = cityKey(value);
+  if (destination === "ottawa") return "ottawa";
+  if (destination === "quebec city" || isQuebecCityPostalCode(value)) {
+    return "quebec city";
+  }
   if (
-    customer === "gobolt" &&
-    service === "ltl" &&
-    ontarioZone &&
-    ontarioZone <= 4
+    destination === "montreal" ||
+    destination === "montreal local" ||
+    isMontrealLocalPostalCode(value) ||
+    montrealLocal.includes(destination)
   ) {
-    return {
-      base: montrealCard.gta[rateIndex(pallets, montrealCard.gta.length)],
-      note: "GoBolt YUL2 / Montreal to GTA LTL card",
-      card,
-      fuelMode: "included",
-    };
+    return "montreal";
   }
-
-  if (customer === "gobolt" && service === "ltl" && destination === "ottawa") {
-    return {
-      base: montrealCard.ottawa[rateIndex(pallets, montrealCard.ottawa.length)],
-      note: "GoBolt YUL2 / Montreal to Ottawa LTL card",
-      card,
-      fuelMode: "included",
-    };
-  }
-
-  if (
-    customer === "gobolt" &&
-    service === "ftl" &&
-    ontarioZone &&
-    ontarioZone <= 4
-  ) {
-    return {
-      base: montrealCard.gtaFtl,
-      note: "GoBolt YUL2 / Montreal to GTA FTL card",
-      card,
-      fuelMode: "included",
-    };
-  }
-
-  if (customer === "gobolt" && service === "ftl" && destination === "ottawa") {
-    return {
-      base: montrealCard.ottawaFtl,
-      note: "GoBolt YUL2 / Montreal to Ottawa FTL card",
-      card,
-      fuelMode: "included",
-    };
-  }
-
+  if (destination === "gta" || isSpotGtaPickup(value)) return "gta";
   return null;
 }
 
@@ -747,6 +786,79 @@ function resolveCustomPickupRate(
 ): RateResolution | null {
   const pickup = cityKey(pickupInput);
   const destination = cityKey(destinationInput);
+
+  if (customer === "gobolt") {
+    const lane = goboltDestinationLane(destinationInput);
+    if (service === "ltl" && pickup === "kingston" && lane === "gta") {
+      return {
+        base:
+          goboltKingstonToGtaRates[
+            rateIndex(pallets, goboltKingstonToGtaRates.length)
+          ],
+        note: "GoBolt Kingston to GTA pallet table",
+        card: rateCards.gobolt,
+        fuelMode: "included",
+      };
+    }
+
+    if (
+      service === "ltl" &&
+      pickup === "ottawa" &&
+      (lane === "montreal" || lane === "gta")
+    ) {
+      const values = goboltFromOttawaRates[lane];
+      return {
+        base: values[rateIndex(pallets, values.length)],
+        note: `GoBolt from Ottawa to ${cityDisplayName(lane)} pallet table`,
+        card: rateCards.gobolt,
+        fuelMode: "included",
+      };
+    }
+
+    if (
+      service === "ftl" &&
+      pickup === "ottawa" &&
+      (lane === "montreal" || lane === "gta")
+    ) {
+      return {
+        base: goboltFromOttawaFtlRates[lane],
+        note: `GoBolt from Ottawa to ${cityDisplayName(lane)} FTL rate`,
+        card: rateCards.gobolt,
+        fuelMode: "included",
+      };
+    }
+
+    if (
+      service === "ltl" &&
+      isSpotGtaPickup(pickupInput) &&
+      lane &&
+      lane !== "gta"
+    ) {
+      const values = goboltFromGtaRates[lane];
+      return {
+        base: values[rateIndex(pallets, values.length)],
+        note: `GoBolt from GTA to ${cityDisplayName(lane)} pallet table`,
+        card: rateCards.gobolt,
+        fuelMode: "included",
+      };
+    }
+
+    if (
+      service === "ftl" &&
+      isSpotGtaPickup(pickupInput) &&
+      lane &&
+      lane !== "gta"
+    ) {
+      return {
+        base: goboltFromGtaFtlRates[lane],
+        note: `GoBolt from GTA to ${cityDisplayName(lane)} FTL rate`,
+        card: rateCards.gobolt,
+        fuelMode: "included",
+      };
+    }
+
+    return null;
+  }
 
   if (
     customer === "spot" &&
@@ -796,6 +908,7 @@ function resolveCustomPickupRate(
 function cityDisplayName(value: unknown) {
   const key = cityKey(value);
   const special: Record<string, string> = {
+    gta: "GTA",
     "nova scotia": "Nova Scotia",
     "calgary edmonton": "Calgary-Edmonton",
     "quebec city": "Quebec City",

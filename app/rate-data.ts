@@ -68,7 +68,7 @@ export const customerProfiles: Array<{
   {
     id: "gobolt",
     label: "GoBolt",
-    hint: "GoBolt contracted Montreal pallet rates with fuel included.",
+    hint: "GoBolt contracted GTA, Montreal, Ottawa and Kingston pallet rates with fuel included.",
   },
   {
     id: "muji",
@@ -465,8 +465,8 @@ export const rateCards: Record<CustomerId, RateCard> = {
   },
   gobolt: {
     label: "GoBolt",
-    effective: "July 28, 2026",
-    sourceLabel: "GoBolt Pallet Rate",
+    effective: "August 26, 2026",
+    sourceLabel: "GoBolt Pallet Rate Card",
     fuelMode: "included",
   },
   muji: {
@@ -513,6 +513,42 @@ export const montrealCard = {
   gtaFtl: 900,
   ottawaFtl: 750,
 };
+
+export const goboltFromGtaRates = {
+  ottawa: [150, 221, 290, 359, 428, 498, 567, 636, 756, 788],
+  montreal: [169, 263, 356, 444, 513, 606, 694, 775, 869, 956],
+  "quebec city": [289, 383, 476, 564, 633, 726, 814, 895, 989, 1076],
+};
+
+export const goboltFromGtaFtlRates = {
+  ottawa: 1248,
+  montreal: 1310,
+  "quebec city": 1950,
+};
+
+export const goboltFromMontrealRates = {
+  ottawa: [135, 195, 255, 315, 375, 415, 455, 495, 535, 575],
+  gta: [155, 235, 315, 395, 475, 525, 575, 625, 675, 725],
+};
+
+export const goboltFromMontrealFtlRates = {
+  ottawa: 750,
+  gta: 900,
+};
+
+export const goboltFromOttawaRates = {
+  montreal: [135, 195, 255, 315, 375, 415, 455, 495, 535, 575],
+  gta: [155, 235, 315, 395, 475, 525, 575, 625, 675, 725],
+};
+
+export const goboltFromOttawaFtlRates = {
+  montreal: 750,
+  gta: 900,
+};
+
+export const goboltKingstonToGtaRates = [
+  275, 325, 385, 455, 525, 590, 660, 725, 790, 850,
+];
 
 export const straightTruckMax5Ton = [148, 167, 195, 195, 750, 900];
 
