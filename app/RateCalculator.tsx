@@ -227,7 +227,7 @@ function serviceLabel(service: ServiceMode) {
   return service.toUpperCase();
 }
 
-function fuelServiceMode(
+export function fuelServiceMode(
   destination: string,
   service: ServiceMode,
 ): "ltl" | "ftl" {
@@ -241,7 +241,7 @@ function fuelServiceMode(
   return service;
 }
 
-function parseAppsFuel(text: string) {
+export function parseAppsFuel(text: string) {
   const plain = text
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/gi, " ")
@@ -1141,7 +1141,7 @@ function confidenceFor(
   };
 }
 
-function calculateQuote(input: {
+export function calculateQuote(input: {
   originMode: OriginMode;
   warehouse: WarehouseId;
   pickupCity: string;

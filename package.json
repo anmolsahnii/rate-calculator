@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:standalone": "vite build --config work/standalone/vite.config.mjs && node work/inline_standalone.mjs",
+    "build:standalone": "vite build --config work/standalone/vite.config.mjs && node work/inline_standalone.mjs && vite build --config email-assistant/vite.config.mjs && node email-assistant/package.mjs",
+    "build:email-assistant": "vite build --config email-assistant/vite.config.mjs && node email-assistant/package.mjs",
     "start": "next start",
     "test": "next build && node --test tests/*.test.mjs",
     "lint": "eslint . --ignore-pattern out --ignore-pattern .next",

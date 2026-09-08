@@ -868,6 +868,7 @@ export const cityAliases: Record<string, string> = {
   "riviere du loup": "riviere-du-loup",
   "niagara falls": "niagara",
   "niagara on the lake": "niagara-on-the-lake",
+  "niagara-on-the-lake": "niagara-on-the-lake",
   notl: "niagara-on-the-lake",
   "st catherine": "st catharines",
   "st. catherine": "st catharines",

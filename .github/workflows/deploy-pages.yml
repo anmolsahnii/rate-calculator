@@ -34,6 +34,9 @@ jobs:
       - name: Build static site
         run: npm run build
 
+      - name: Build email quote assistant
+        run: npm run build:email-assistant
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
