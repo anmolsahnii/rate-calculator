@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { calculateQuote, fuelServiceMode, parseAppsFuel } from "./RateCalculator";
 import { parseQuoteEmail, type OpenQuoteEmail } from "./email-quote-parser";
 import { customerProfiles, rateCards, type CustomerId } from "./rate-data";
@@ -12,17 +12,13 @@ type Fuel = { ltl: number; tl: number; effective: string; status: "checking" | "
 export function EmailQuoteAssistant() {
   const [email, setEmail] = useState<OpenQuoteEmail | null>(null);
   const [revision, setRevision] = useState(0);
-  const [following, setFollowing] = useState(true);
-  const followingRef = useRef(true);
-  const [paste, setPaste] = useState("");
-  const [sender, setSender] = useState("");
   const [fuel, setFuel] = useState<Fuel>({ ltl: 35.4, tl: 83.2, effective: "July 27, 2026", status: "checking" });
   const [fuelRefresh, setFuelRefresh] = useState(0);
 
   useEffect(() => {
     const receive = (event: MessageEvent) => {
       if (event.source !== window.parent || !/^chrome-extension:\/\/[a-p]{32}$/.test(event.origin)) return;
-      if (event.data?.type !== "3myle-open-email" || !followingRef.current) return;
+      if (event.data?.type !== "3myle-open-email") return;
       const item = event.data.email;
       if (item !== null && (!item || typeof item.sender !== "string" || typeof item.subject !== "string" || typeof item.body !== "string")) return;
       setEmail(item === null ? null : { sender: item.sender.slice(0, 500), subject: item.subject.slice(0, 500), body: item.body.slice(0, 40000), hasAttachments: Boolean(item.hasAttachments) });
@@ -53,16 +49,8 @@ export function EmailQuoteAssistant() {
     return () => { cancelled = true; controller.abort(); };
   }, [fuelRefresh]);
 
-  function follow(enabled: boolean) {
-    followingRef.current = enabled;
-    setFollowing(enabled);
-    if (window.parent !== window) window.parent.postMessage({ type: "3myle-follow-email", enabled }, "*");
-  }
-
   return <main className="email-assistant">
-    <header className="ea-header"><div><span className="ea-brand">3Myle</span><h1>Quote assistant</h1></div><label className="ea-follow"><input type="checkbox" checked={following} onChange={(event) => follow(event.target.checked)} />Follow email</label></header>
-    {email ? <QuoteDetails key={revision} email={email} fuel={fuel} refreshFuel={() => setFuelRefresh((value) => value + 1)} /> : <section className="ea-empty"><h2>Ready for a quote request</h2><p>Waiting for an open Gmail message.</p></section>}
-    <details className="ea-paste"><summary>Paste an email</summary><form onSubmit={(event) => { event.preventDefault(); follow(false); setEmail({ sender, subject: "Pasted request", body: paste }); setRevision((value) => value + 1); }}><label>Sender / company<input value={sender} onChange={(event) => setSender(event.target.value)} /></label><label>Email text<textarea aria-label="Email text" rows={7} value={paste} onChange={(event) => setPaste(event.target.value)} required /></label><button type="submit">Analyze request</button></form></details>
+    {email ? <QuoteDetails key={revision} email={email} fuel={fuel} refreshFuel={() => setFuelRefresh((value) => value + 1)} /> : <section className="ea-empty"><h2>No message analyzed</h2><p>Ready for the open Gmail message.</p></section>}
     <footer className="ea-footer">CAD · Rate cards + APPS fuel · Text extraction</footer>
   </main>;
 }

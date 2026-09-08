@@ -4,41 +4,25 @@ const frame = document.getElementById("assistant");
 const status = document.getElementById("connection");
 frame.src = `${assistantUrl}?v=${Date.now()}`;
 let ready = false;
-let sequence = 0;
-let previous = "";
-let paused = false;
+let email = null;
+
+function deliver() {
+  if (ready) frame.contentWindow.postMessage({ type: "3myle-open-email", email }, assistantOrigin);
+}
 
 window.addEventListener("message", (event) => {
-  if (event.origin !== assistantOrigin || event.source !== frame.contentWindow) return;
-  if (event.data?.type === "3myle-assistant-ready") { ready = true; previous = ""; void refresh(); }
-  if (event.data?.type === "3myle-follow-email") {
-    paused = !event.data.enabled;
-    previous = "";
-    status.textContent = paused ? "Paused on this quote" : "Reading the open Gmail message...";
-    if (!paused) void refresh();
+  if (event.origin === "https://mail.google.com" && event.source === window.parent) {
+    if (event.data?.type !== "3myle-analyze-email") return;
+    email = event.data.email;
+    deliver();
+    return;
   }
+  if (event.origin !== assistantOrigin || event.source !== frame.contentWindow) return;
+  if (event.data?.type !== "3myle-assistant-ready") return;
+  ready = true;
+  status.hidden = true;
+  deliver();
 });
 
-async function refresh() {
-  if (!ready || paused) return;
-  const request = ++sequence;
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  let email = null;
-  let label = "Open an email in Gmail";
-  try {
-    if (tab?.id) {
-      const result = await chrome.tabs.sendMessage(tab.id, { type: "3myle-read-open-email" });
-      email = result?.email ?? null;
-      label = email ? "Following the open Gmail message" : "Open or expand a Gmail message";
-    }
-  } catch { label = "Open Gmail; refresh its tab after first installation"; }
-  if (request !== sequence || paused) return;
-  status.textContent = label;
-  const key = JSON.stringify([tab?.id, email]);
-  if (key === previous) return;
-  previous = key;
-  frame.contentWindow.postMessage({ type: "3myle-open-email", email }, assistantOrigin);
-}
-setInterval(() => void refresh(), 1500);
-chrome.tabs.onActivated.addListener(() => void refresh());
-setTimeout(() => { if (!ready) status.textContent = "Rate panel could not connect. Check your internet connection and reopen the sidebar."; }, 20000);
+window.parent.postMessage({ type: "3myle-note-ready" }, "https://mail.google.com");
+setTimeout(() => { if (!ready) status.textContent = "Rate cards unavailable. Check your connection, then refresh Gmail."; }, 20000);
