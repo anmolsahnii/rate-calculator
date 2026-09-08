@@ -1,5 +1,115 @@
 [
   {
+    "date": "2026-09-04",
+    "customer": "Canada Cartage / Uniqlo",
+    "origin": "Pointe-Claire, QC",
+    "destination": "Mississauga, ON",
+    "skids": 2,
+    "service": "LTL",
+    "price": 630,
+    "kind": "sent quote - all in, CF Fairview Pointe-Claire return, 2 skids @ 1058 lb, 69 x 51 x 43 each"
+  },
+  {
+    "date": "2026-09-04",
+    "customer": "Canada Cartage / Uniqlo",
+    "origin": "Laval, QC",
+    "destination": "Mississauga, ON",
+    "skids": 1,
+    "service": "LTL",
+    "price": 245,
+    "kind": "rate confirmation - all in, CF Carrefour Laval return, hanger rails x7, 48 x 48 x 48, 100 lb, 2 LF"
+  },
+  {
+    "date": "2026-09-04",
+    "customer": "Canada Cartage / Uniqlo",
+    "origin": "Mississauga, ON",
+    "destination": "Hillcrest Mall, Richmond Hill, ON",
+    "skids": 19,
+    "service": "Straight Truck",
+    "price": 860,
+    "kind": "sent quote - all in, 2 straight trucks at 430 each, 21 pallet spots, 7 AM delivery"
+  },
+  {
+    "date": "2026-09-02",
+    "customer": "Canada Cartage / Uniqlo",
+    "origin": "Mississauga, ON",
+    "destination": "Montreal, QC",
+    "skids": 3,
+    "service": "LTL",
+    "price": 755,
+    "kind": "rate confirmation - store fixtures, 73 x 40 x 12 @ 1350 lb, 48 x 40 x 32 @ 1500 lb, 73 x 40 x 24 @ 1300 lb, 10 LF"
+  },
+  {
+    "date": "2026-09-02",
+    "customer": "Canada Cartage / Uniqlo",
+    "origin": "Mississauga, ON",
+    "destination": "Laval, QC",
+    "skids": 1,
+    "service": "LTL",
+    "price": 275,
+    "kind": "sent quote - all in, CF Carrefour Laval, 48 x 40 x 22, 1250 lb, regular Friday delivery"
+  },
+  {
+    "date": "2026-09-02",
+    "customer": "Canada Cartage / Uniqlo",
+    "origin": "Mississauga, ON",
+    "destination": "Waterloo, ON",
+    "skids": 3,
+    "service": "LTL",
+    "price": 380,
+    "kind": "revised sent quote - all in, Uniqlo Conestoga, 50 x 38 x 43 @ 4050 lb x2 and 50 x 38 x 32 @ 3550 lb; final specs pending due heavy skids"
+  },
+  {
+    "date": "2026-09-01",
+    "customer": "Canada Cartage / Uniqlo",
+    "origin": "Markham, ON",
+    "destination": "Ottawa, ON",
+    "skids": 12,
+    "service": "Straight Truck",
+    "price": 1150,
+    "kind": "rate confirmation - non-stackable hardware, appointment, 48 x 40 x 72, 24 x 36 x 40, plus two 5-skid groups at 48 x 40 x 72 and 48 x 40 x 60"
+  },
+  {
+    "date": "2026-09-01",
+    "customer": "Canada Cartage / Uniqlo",
+    "origin": "Mississauga, ON",
+    "destination": "Saint-Bruno-de-Montarville, QC",
+    "skids": 1,
+    "service": "LTL",
+    "price": 390,
+    "kind": "rate confirmation - store fixture, tailgate delivery, 75 x 41 x 21, 1650 lb, 4 LF"
+  },
+  {
+    "date": "2026-09-01",
+    "customer": "Canada Cartage / Uniqlo",
+    "origin": "Mississauga, ON",
+    "destination": "Quebec City, QC",
+    "skids": 2,
+    "service": "LTL",
+    "price": 935,
+    "kind": "rate confirmation - store fixtures, tailgate delivery, 72 x 40 x 24 @ 1650 lb and 72 x 40 x 29 @ 1650 lb, 6 LF"
+  },
+  {
+    "date": "2026-09-01",
+    "customer": "Canada Cartage / Uniqlo",
+    "origin": "Mississauga, ON",
+    "destination": "Richmond Hill, ON",
+    "skids": 9,
+    "service": "Straight Truck",
+    "price": 760,
+    "kind": "rate confirmation - 2 straight trucks, 9 store fixture skids, 40 LF total, appointment delivery"
+  },
+  {
+    "date": "2026-08-12",
+    "customer": "Canada Cartage / Uniqlo",
+    "origin": "Mississauga, ON",
+    "destination": "Montreal, QC",
+    "skids": 1,
+    "service": "LTL",
+    "price": 335,
+    "kind": "rate confirmation - store fixture, 73 x 40 x 34, 750 lb, 4 LF, 5 ton delivery"
+  },
+  {
     "date": "2026-08-24",
     "customer": "Radiant",
     "origin": "Mississauga, ON",
