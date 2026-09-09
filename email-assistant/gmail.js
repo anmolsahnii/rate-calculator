@@ -55,9 +55,10 @@
   const shadow = host.attachShadow({ mode: "open" });
   const style = document.createElement("style");
   style.textContent = `
-    :host{color-scheme:light}*{box-sizing:border-box;letter-spacing:0}.note{border:1px solid #c0c7b5;border-radius:6px;box-shadow:0 6px 28px #18352930;overflow:hidden;background:#fffef5}
+    :host{color-scheme:light}:host([hidden]){display:none!important}*{box-sizing:border-box;letter-spacing:0}.note{border:1px solid #c0c7b5;border-radius:6px;box-shadow:0 6px 28px #18352930;overflow:hidden;background:#fffef5}
     .handle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;background:#fff1aa;cursor:move;touch-action:none;user-select:none}
     .handle strong{font:700 13px Arial,sans-serif;color:#334c37}.handle button{width:28px;height:28px;padding:0;border:1px solid #c8bd83;border-radius:4px;background:transparent;font:20px Arial;cursor:pointer;color:#334c37}
+    .window-controls{display:flex;gap:4px;flex:none}
     .actions{padding:10px 12px;background:#fffbed;display:flex;align-items:center;gap:10px}.actions button{background:#176a55;border:0;border-radius:4px;color:white;font:600 13px Arial;padding:10px 12px;cursor:pointer;flex:none}.status{font:11px/1.4 Arial;color:#58644b;overflow-wrap:anywhere}
     iframe{display:block;width:100%;height:min(440px,calc(100vh - 148px));min-height:80px;border:0;background:white}[hidden]{display:none!important}
     button:focus-visible{outline:2px solid #176a55;outline-offset:2px}
@@ -71,7 +72,9 @@
   }
   const note = element("section", { class: "note", "aria-label": "3Myle floating quote note" });
   const titlebar = element("div", { class: "handle" });
-  titlebar.append(element("strong", {}, "3Myle · Quote note"), element("button", { type: "button", title: "Minimize note", "aria-label": "Minimize note" }, "−"));
+  const controls = element("div", { class: "window-controls" });
+  controls.append(element("button", { class: "minimize", type: "button", title: "Minimize note", "aria-label": "Minimize note" }, "−"), element("button", { class: "close", type: "button", title: "Close note", "aria-label": "Close note" }, "×"));
+  titlebar.append(element("strong", {}, "3Myle · Quote note"), controls);
   const content = element("div", { class: "contents" });
   const actions = element("div", { class: "actions" });
   actions.append(element("button", { type: "button" }, "Analyze email"), element("span", { class: "status", role: "status" }, "Connecting..."));
@@ -81,7 +84,7 @@
   const frame = shadow.querySelector("iframe");
   const status = shadow.querySelector(".status");
   const contents = shadow.querySelector(".contents");
-  const minimize = shadow.querySelector(".handle button");
+  const minimize = shadow.querySelector(".minimize");
   const handle = shadow.querySelector(".handle");
   const frameOrigin = `chrome-extension://${chrome.runtime.id}`;
   frame.src = chrome.runtime.getURL("panel.html");
@@ -107,6 +110,7 @@
     send();
   });
   function expand() {
+    host.hidden = false;
     contents.hidden = false;
     minimize.textContent = "−";
     minimize.setAttribute("aria-label", "Minimize note");
@@ -119,6 +123,9 @@
     minimize.textContent = "+";
     minimize.setAttribute("aria-label", "Expand note");
     minimize.title = "Expand note";
+  });
+  shadow.querySelector(".close").addEventListener("click", () => {
+    host.hidden = true;
   });
   chrome.runtime.onMessage.addListener((request, _sender, respond) => {
     if (request?.type === "3myle-show-note") {
@@ -134,6 +141,7 @@
     host.style.bottom = "auto";
   }
   function constrain() {
+    if (host.hidden) return;
     const bounds = host.getBoundingClientRect();
     position(bounds.left, bounds.top);
   }

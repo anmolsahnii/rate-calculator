@@ -115,8 +115,12 @@ try {
   await resultFrame.evaluate((email) => window.dispatchEvent(new MessageEvent("message", { origin: "chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", source: window.parent, data: { type: "3myle-open-email", email } })), extracted);
   await renderedNote.getByText("All-in customer price", { exact: true }).waitFor();
   await reader.screenshot({ path: "outputs/email-assistant-qa/floating-note.png" });
+  await reader.getByRole("button", { name: "Close note", exact: true }).click();
+  assert.equal(await reader.locator('[id="3myle-quote-note"]').isVisible(), false);
   await reader.evaluate(() => { document.querySelector('div[role="main"]').textContent = "Inbox"; });
   await reader.waitForFunction(() => window.sentQuotes.at(-1).message.email === null);
+  assert.equal(await reader.locator('[id="3myle-quote-note"]').isVisible(), false, "Closed note stays hidden during Gmail navigation");
+  await reader.evaluate(() => window.showQuoteNote({ type: "3myle-show-note" }, {}, () => {}));
   assert.equal(await reader.getByRole("button", { name: "Analyze email", exact: true }).isVisible(), true, "Note survives Gmail navigation");
   assert.equal((await browser.contexts()[0].pages()).length, 1, "Assistant does not open a tab in the original context");
   await reader.close();

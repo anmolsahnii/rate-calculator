@@ -1,5 +1,7 @@
 # 3Myle Floating Quote Note
 
+Version 1.1.2: the X button closes the note. Click the extension toolbar icon to reopen it. Closing keeps it hidden while you navigate Gmail; refreshing Gmail opens it again.
+
 1. In Chrome open chrome://extensions (Edge: edge://extensions).
 2. Enable Developer mode, choose Load unpacked, and select this folder.
 3. Refresh Gmail. The quote note appears in the bottom-right corner automatically.

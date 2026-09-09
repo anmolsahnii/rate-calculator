@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "3Myle Email Quote Assistant",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Rate the open Gmail message using your 3Myle customer rate cards.",
   "minimum_chrome_version": "116",
   "action": { "default_title": "Show 3Myle floating quote note" },
