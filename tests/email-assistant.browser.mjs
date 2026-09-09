@@ -23,7 +23,8 @@ try {
   })), email);
   await sendEmail({ sender: "GoBolt <quotes@gobolt.com>", subject: "Quote request", body: "From Mississauga to Ottawa\n2 pallets\n48 x 40 x 48 inches\nTailgate required. Inside delivery required." });
   await page.getByText("All-in customer price", { exact: true }).waitFor();
-  assert.equal(await page.getByRole("combobox", { name: /Customer agreement/ }).inputValue(), "gobolt");
+  assert.equal(await page.getByRole("combobox", { name: /Customer agreement/ }).inputValue(), "spot");
+  await page.getByRole("combobox", { name: /Customer agreement/ }).selectOption("gobolt");
   assert.equal(await page.getByLabel("Pallet spots", { exact: true }).inputValue(), "2");
   assert.equal(await page.getByLabel("Tailgate", { exact: true }).isChecked(), true);
   assert.equal(await page.getByLabel("Inside delivery", { exact: true }).isChecked(), true);
@@ -50,16 +51,25 @@ try {
   assert.equal(await page.locator(".ea-price").innerText(), "No confirmed rate");
   assert.equal(await page.getByRole("button", { name: "Copy quote", exact: true }).isDisabled(), true);
   await sendEmail({ sender: "GoBolt <quotes@gobolt.com>", subject: "New request", body: "Can you quote the attached shipment?" });
-  assert.equal(await page.getByLabel("Pickup city / postal code", { exact: true }).inputValue(), "");
+  assert.equal(await page.getByLabel("Pickup city / postal code", { exact: true }).inputValue(), "mississauga");
   assert.equal(await page.getByLabel("Destination / postal code", { exact: true }).inputValue(), "");
   assert.equal(await page.getByLabel("Pallet spots", { exact: true }).inputValue(), "");
   assert.equal(await page.locator(".ea-price").innerText(), "No confirmed rate");
+  await sendEmail({ sender: "Example <quote@example.com>", subject: "Updated rate request", body: "Pallet\tLength(IN)\tWidth (IN)\tHeight(IN)\tWeight (LB)\n1\t72\t40\t35\t2100\n2\t73\t41\t18\t1500\n3\t48\t40\t14\t350\n3950", quotedBody: "\nFrom: Earlier message\nDelivery Address:\nMontreal, QC H3B 4G5\n5 skid spots" });
+  assert.equal(await page.getByRole("combobox", { name: /Customer agreement/ }).inputValue(), "spot");
+  assert.equal(await page.getByLabel("Pickup city / postal code", { exact: true }).inputValue(), "mississauga");
+  assert.equal(await page.getByLabel("Destination / postal code", { exact: true }).inputValue(), "montreal");
+  assert.equal(await page.getByLabel("Pallet spots", { exact: true }).inputValue(), "7");
+  // Spot Montreal: seven spots $658 + 35.4% fuel + 10% adjustment, rounded to $980.
+  assert.equal(await page.locator(".ea-price").innerText(), "$980.00");
+  console.log("Updated table Spot quote:", await page.locator(".ea-price").innerText());
   await sendEmail(null);
   await page.getByText("No message analyzed", { exact: true }).waitFor();
   assert.equal(await page.locator(".ea-price").count(), 0);
   assert.deepEqual(errors, []);
   const reader = await browser.newPage();
-  await reader.setContent('<div role="main"><h2 class="hP">Quote request</h2><div class="adn"><span class="gD" name="Earlier" email="earlier@example.com"></span><div class="a3s" style="display:none">Old 8 pallets</div></div><div class="adn"><span class="gD" name="GoBolt" email="quotes@gobolt.com"></span><div class="a3s"><div>From Mississauga to Ottawa</div><div>2 pallets</div><div class="gmail_quote">Old 8 pallets</div><div class="gmail_signature">Toronto office</div></div><div class="aQH"><div class="aZo">Attachment</div></div></div></div>');
+  await reader.route("https://mail.google.com/**", (route) => route.fulfill({ contentType: "text/html", headers: { "Content-Security-Policy": "require-trusted-types-for 'script'" }, body: '<div role="main"><h2 class="hP">Quote request</h2><div class="adn"><span class="gD" name="Earlier" email="earlier@example.com"></span><div class="a3s" style="display:none">Old 8 pallets</div></div><div class="adn"><span class="gD" name="GoBolt" email="quotes@gobolt.com"></span><div class="a3s"><div>From Mississauga to Ottawa</div><div>2 pallets</div><div class="gmail_quote">Old 8 pallets</div><div class="gmail_signature">Toronto office</div></div><div class="aQH"><div class="aZo">Attachment</div></div></div></div>' }));
+  await reader.goto("https://mail.google.com/mail/u/0/#inbox/test-fixture");
   await reader.evaluate(() => {
     window.chrome = { runtime: { id: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", getURL: (file) => `chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/${file}`, onMessage: { addListener(fn) { window.showQuoteNote = fn; } } } };
     // A simulated extension-frame port isolates the Gmail reader from installed browser state.
@@ -67,7 +77,9 @@ try {
     Object.defineProperty(HTMLIFrameElement.prototype, "contentWindow", { get() { return window; } });
     window.postMessage = (message, targetOrigin) => window.sentQuotes.push({ message, targetOrigin });
   });
-  await reader.addScriptTag({ content: await readFile("email-assistant/gmail.js", "utf8") });
+  await reader.evaluate(await readFile("email-assistant/gmail.js", "utf8"));
+  await reader.evaluate(await readFile("email-assistant/gmail.js", "utf8"));
+  assert.equal(await reader.locator('[id="3myle-quote-note"]').count(), 1, "Reinjection leaves one functioning note");
   await reader.evaluate(() => window.dispatchEvent(new MessageEvent("message", { source: window, origin: "chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", data: { type: "3myle-note-ready" } })));
   assert.equal(await reader.evaluate(() => window.sentQuotes.filter((item) => item.message.email).length), 0, "No email read before click");
   await reader.getByRole("button", { name: "Analyze email", exact: true }).click();
@@ -75,6 +87,7 @@ try {
   assert.equal(extracted.sender, "GoBolt <quotes@gobolt.com>");
   assert.match(extracted.body, /Mississauga to Ottawa\n2 pallets/);
   assert.doesNotMatch(extracted.body, /Old|office/);
+  assert.match(extracted.quotedBody, /Old 8 pallets/);
   assert.equal(extracted.hasAttachments, true);
   assert.equal(await reader.evaluate(() => window.sentQuotes.at(-1).targetOrigin), "chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
   await reader.getByRole("button", { name: "Minimize note", exact: true }).click();
@@ -93,14 +106,16 @@ try {
   const bounds = await reader.locator('[id="3myle-quote-note"]').boundingBox();
   assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= 320 && bounds.y + bounds.height <= 640, "Note stays in viewport");
   await reader.route(/appsexpress\.com/, (route) => route.fulfill({ body: "27-Jul-26 | 31 | 35.4 | 83.2", contentType: "text/plain" }));
-  await reader.locator('iframe[title="Quote result"]').evaluate((iframe, url) => { iframe.src = url; }, `http://127.0.0.1:${port}`);
+  const hostedFixture = "https://anmolsahnii.github.io/rate-calculator/email-assistant.html";
+  await reader.route(hostedFixture, (route) => route.fulfill({ contentType: "text/html", body: html }));
+  await reader.locator('iframe[title="Quote result"]').evaluate((iframe, url) => { iframe.src = url; }, hostedFixture);
   const renderedNote = reader.frameLocator('iframe[title="Quote result"]');
   await renderedNote.getByText("No message analyzed", { exact: true }).waitFor();
-  const resultFrame = reader.frames().find((frame) => frame.url().startsWith(`http://127.0.0.1:${port}`));
+  const resultFrame = reader.frames().find((frame) => frame.url() === hostedFixture);
   await resultFrame.evaluate((email) => window.dispatchEvent(new MessageEvent("message", { origin: "chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", source: window.parent, data: { type: "3myle-open-email", email } })), extracted);
   await renderedNote.getByText("All-in customer price", { exact: true }).waitFor();
   await reader.screenshot({ path: "outputs/email-assistant-qa/floating-note.png" });
-  await reader.evaluate(() => { document.querySelector('div[role="main"]').innerHTML = "Inbox"; });
+  await reader.evaluate(() => { document.querySelector('div[role="main"]').textContent = "Inbox"; });
   await reader.waitForFunction(() => window.sentQuotes.at(-1).message.email === null);
   assert.equal(await reader.getByRole("button", { name: "Analyze email", exact: true }).isVisible(), true, "Note survives Gmail navigation");
   assert.equal((await browser.contexts()[0].pages()).length, 1, "Assistant does not open a tab in the original context");

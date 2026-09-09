@@ -2,7 +2,7 @@ import { customerProfiles, destinationSuggestions, cityAliases, type CustomerId 
 import { cityKey, clean, postalCodeDestination } from "./rate-matching.ts";
 import { estimatePalletSpots } from "./pallet-spots.ts";
 
-export type OpenQuoteEmail = { sender: string; subject: string; body: string; hasAttachments?: boolean };
+export type OpenQuoteEmail = { sender: string; subject: string; body: string; quotedBody?: string; hasAttachments?: boolean };
 export type EmailQuoteDetails = {
   customer: CustomerId | "";
   origin: string;
@@ -37,7 +37,22 @@ function citiesIn(text: string) {
 
 // Quoted messages and signatures often contain older lanes and warehouse addresses.
 export function currentMessageText(body: string) {
-  return body.split(/\n\s*(?:On .+wrote:|[-_]{3,}\s*(?:Original|Forwarded) message|From:\s*.+@|(?:Best regards|Kind regards|Regards|Sincerely)[,!]?\s*$)/im)[0].trim();
+  return body.split(/\n\s*(?:On .+wrote:|[-_]{3,}\s*(?:Original|Forwarded) message|From:\s*.+\n\s*(?:Sent|Date):|From:\s*.+@|(?:Best regards|Kind regards|Regards|Sincerely)[,!]?\s*$)/im)[0].trim();
+}
+
+// Outlook tables can arrive as one cell per line or tab-separated rows.
+function palletTable(body: string) {
+  const header = /\bpallet\s+(?:length\s*\(\s*in\s*\))\s+width\s*\(\s*in\s*\)\s+height\s*\(\s*in\s*\)\s+weight\s*\(\s*lbs?\s*\)/i.exec(body);
+  if (!header) return [];
+  let rest = body.slice(header.index + header[0].length);
+  const rows: string[] = [];
+  while (rest.trim()) {
+    const row = /^\s*(\d+)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)\s+([\d,]+(?:\.\d+)?)(?=\s|$)/.exec(rest);
+    if (!row || Number(row[1]) !== rows.length + 1 || row.slice(2).some((n) => Number(n.replaceAll(",", "")) <= 0)) break;
+    rows.push(`${row[2]} x ${row[3]} x ${row[4]} inches`);
+    rest = rest.slice(row[0].length);
+  }
+  return rows;
 }
 
 export function parseQuoteEmail(email: OpenQuoteEmail): EmailQuoteDetails {
@@ -59,19 +74,18 @@ export function parseQuoteEmail(email: OpenQuoteEmail): EmailQuoteDetails {
     customer = /\bsupplies\b/i.test(text) ? "ccls" : "uniqlo";
     warnings.push("Confirm the Uniqlo agreement: supplies and store deliveries use different cards.");
   }
-  if (!customer) warnings.push("Customer not recognized. Select the agreement or Spot.");
 
-  const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
   const originLabel = /^(?:(?:pickup|pick up|pick-up|origin)(?:\s+(?:location|address|details))?|from)\s*[:=-]\s*(.*)$/i;
   const destinationLabel = /^(?:(?:destination|delivery|deliver to|delivery to|ship to|consignee)(?:\s+(?:location|address))?|to)\s*[:=-]\s*(.*)$/i;
   const route = text.match(/\bfrom\s+([^\n]+?)\s+(?:to|->)\s+([^\n]+)/i);
-  function endpoint(label: RegExp, other: RegExp, routePart: string | undefined) {
+  function endpoint(label: RegExp, other: RegExp, routePart: string | undefined, source = text) {
+    const lines = source.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
     const found: string[] = [];
     for (let i = 0; i < lines.length; i++) {
       const match = lines[i].match(label);
       if (!match) continue;
       const block = [match[1]];
-      for (let j = i + 1; j < Math.min(lines.length, i + 5); j++) {
+      for (let j = i + 1; j < Math.min(lines.length, i + 8); j++) {
         if (other.test(lines[j]) || label.test(lines[j]) || /^(?:dims?|dimensions|total|skids|pallets|weight|pickup window|delivery window)\b/i.test(lines[j])) break;
         block.push(lines[j]);
       }
@@ -82,20 +96,33 @@ export function parseQuoteEmail(email: OpenQuoteEmail): EmailQuoteDetails {
     if (unique.length > 1) warnings.push("Multiple locations detected. Review each shipment separately.");
     return unique.length === 1 ? unique[0] : "";
   }
-  const origin = endpoint(originLabel, destinationLabel, route?.[1]);
-  const destination = endpoint(destinationLabel, originLabel, route?.[2]);
-  if (!origin) warnings.push("Pickup city is missing or ambiguous.");
+  const origin = "mississauga";
+  const statedOrigin = endpoint(originLabel, destinationLabel, route?.[1]);
+  if (statedOrigin && statedOrigin !== origin) warnings.push(`Email mentions pickup in ${statedOrigin}; using your default Mississauga pickup. Confirm before quoting.`);
+  let destination = endpoint(destinationLabel, originLabel, route?.[2]);
+  if (!destination && !warnings.some((warning) => warning.startsWith("Multiple locations"))) {
+    // Recover only the lane from the nearest quoted request, never its older load count.
+    const previous = `${email.body.slice(body.length)}\n${email.quotedBody ?? ""}`.split(/\n\s*(?:From:|On .+wrote:|[-_]{3,}\s*(?:Original|Forwarded) message)/i).slice(1);
+    for (const reply of previous) {
+      const message = currentMessageText(reply);
+      if (!destinationLabel.test(message.split(/\r?\n/).find((line) => destinationLabel.test(line.trim()))?.trim() ?? "")) continue;
+      destination = endpoint(destinationLabel, originLabel, undefined, message);
+      if (destination) warnings.push("Delivery location taken from the earlier message in this thread. Confirm it still applies.");
+      break;
+    }
+  }
   if (!destination) warnings.push("Destination is missing or ambiguous.");
 
   const counts = [...body.matchAll(/\b(\d+(?:\.\d+)?)\s*(?:skids?|pallets?)\b(?!\s*spots?)/gi)].map((m) => Number(m[1]));
   const totals = [...body.matchAll(/\b(?:total\s+)?(?:skids?|pallets?)\s*[:=]\s*(\d+(?:\.\d+)?)/gi)].map((m) => Number(m[1]));
   const uniqueCounts = [...new Set(totals.length ? totals : counts)];
   const quantityRange = /\b\d+\s*(?:-|to|\u2013)\s*\d+\s*(?:skids?|pallets?)\b/i.test(body);
-  const pallets = !quantityRange && uniqueCounts.length === 1 && uniqueCounts[0] > 0 ? uniqueCounts[0] : null;
+  const tableDimensions = palletTable(body);
+  const pallets = !quantityRange && uniqueCounts.length === 1 && uniqueCounts[0] > 0 ? uniqueCounts[0] : !quantityRange && !uniqueCounts.length && tableDimensions.length ? tableDimensions.length : null;
   if (quantityRange) warnings.push("A pallet range was requested. Enter the quantity for this quote.");
   if (uniqueCounts.length > 1) warnings.push("Multiple pallet quantities detected. Confirm the total for one shipment.");
-  const dimensions = [...body.matchAll(/\b\d+(?:\.\d+)?\s*[xX,]\s*\d+(?:\.\d+)?\s*[xX,]\s*\d+(?:\.\d+)?(?:\s*(?:inches|inch|in|cm|mm|ft))?\b/g)].map((m) => m[0]);
-  const explicitSpots = body.match(/\b(\d+(?:\.\d+)?)\s*pallet\s*spots?\b/i);
+  const dimensions = tableDimensions.length ? tableDimensions : [...body.matchAll(/\b\d+(?:\.\d+)?\s*(?:inches|inch|in|cm|mm|ft|")?\s*[xX\u00d7,]\s*\d+(?:\.\d+)?\s*(?:inches|inch|in|cm|mm|ft|")?\s*[xX\u00d7,]\s*\d+(?:\.\d+)?(?:\s*(?:inches|inch|in|cm|mm|ft|"))?/g)].map((m) => m[0].replaceAll("\u00d7", "x"));
+  const explicitSpots = body.match(/\b(\d+(?:\.\d+)?)\s*(?:pallet|skid)\s*spots?\b/i);
   const feet = body.match(/\b(\d+(?:\.\d+)?)\s*(?:linear\s*(?:feet|ft)|LF)\b/i);
   let spots: number | null = explicitSpots ? Number(explicitSpots[1]) : feet ? Math.ceil(Number(feet[1]) / 2 * 2) / 2 : pallets;
   if (!explicitSpots && !feet && dimensions.length) {

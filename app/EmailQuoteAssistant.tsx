@@ -21,7 +21,7 @@ export function EmailQuoteAssistant() {
       if (event.data?.type !== "3myle-open-email") return;
       const item = event.data.email;
       if (item !== null && (!item || typeof item.sender !== "string" || typeof item.subject !== "string" || typeof item.body !== "string")) return;
-      setEmail(item === null ? null : { sender: item.sender.slice(0, 500), subject: item.subject.slice(0, 500), body: item.body.slice(0, 40000), hasAttachments: Boolean(item.hasAttachments) });
+      setEmail(item === null ? null : { sender: item.sender.slice(0, 500), subject: item.subject.slice(0, 500), body: item.body.slice(0, 40000), quotedBody: typeof item.quotedBody === "string" ? item.quotedBody.slice(0, 40000) : "", hasAttachments: Boolean(item.hasAttachments) });
       setRevision((value) => value + 1);
     };
     window.addEventListener("message", receive);
@@ -57,7 +57,7 @@ export function EmailQuoteAssistant() {
 
 function QuoteDetails({ email, fuel, refreshFuel }: { email: OpenQuoteEmail; fuel: Fuel; refreshFuel: () => void }) {
   const [parsed] = useState(() => parseQuoteEmail(email));
-  const [customer, setCustomer] = useState<CustomerId | "">(parsed.customer);
+  const [customer, setCustomer] = useState<CustomerId | "">("spot");
   const [origin, setOrigin] = useState(parsed.origin);
   const [destination, setDestination] = useState(parsed.destination);
   const [spots, setSpots] = useState(parsed.spots === null ? "" : String(parsed.spots));
@@ -88,7 +88,7 @@ function QuoteDetails({ email, fuel, refreshFuel }: { email: OpenQuoteEmail; fue
   }
 
   return <>
-    <section className="ea-message"><span className="ea-eyebrow">Current message</span><h2>{email.subject}</h2><p>{email.sender || "Sender not provided"}</p></section>
+    <section className="ea-message"><span className="ea-eyebrow">Current message</span><h2>{email.subject}</h2><p>{email.sender || "Sender not provided"}</p>{parsed.customer && <p>Detected client: {customerProfiles.find((item) => item.id === parsed.customer)?.label}</p>}</section>
     <section className="ea-result" aria-label="Quote result"><div className="ea-result-title"><span>All-in customer price</span><span className={`ea-badge ${price === null || !reviewed ? "review" : "matched"}`}>{price === null ? "Needs details" : reviewed ? "Card matched" : "Review quote"}</span></div><strong className="ea-price">{price === null ? "No confirmed rate" : money.format(price)}</strong>
       {price !== null && <p className="ea-quote-line">{line}</p>}
       {oversizedLtl && <p className="ea-warning">Over 10 LTL spots: confirm capacity and tariff tier, or select the agreed truck service.</p>}
