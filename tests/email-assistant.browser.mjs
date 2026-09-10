@@ -63,6 +63,13 @@ try {
   // Spot Montreal: seven spots $658 + 35.4% fuel + 10% adjustment, rounded to $980.
   assert.equal(await page.locator(".ea-price").innerText(), "$980.00");
   console.log("Updated table Spot quote:", await page.locator(".ea-price").innerText());
+  await page.getByRole("combobox", { name: /^Service/ }).selectOption("ftl");
+  for (const destination of ["Mississauga", "Oakville", "Hamilton", "Concord", "Woodbridge", "L9C 6C2"]) {
+    await page.getByLabel("Destination / postal code", { exact: true }).fill(destination);
+    assert.match(await page.locator(".ea-fuel").innerText(), /APPS LTL 35\.4%/, destination);
+  }
+  await page.getByLabel("Destination / postal code", { exact: true }).fill("Montreal");
+  assert.match(await page.locator(".ea-fuel").innerText(), /APPS FTL 83\.2%/);
   await sendEmail(null);
   await page.getByText("No message analyzed", { exact: true }).waitFor();
   assert.equal(await page.locator(".ea-price").count(), 0);

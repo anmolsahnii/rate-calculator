@@ -55,10 +55,16 @@ test("uses LTL fuel for every configured Ontario FTL destination", () => {
     "north york",
     "richmond hill",
     "milton",
+    "concord",
+    "woodbridge",
+    "hamilton",
   ];
 
   for (const destination of destinations) {
     assert.equal(ftlLtlFuelDestinations.has(destination), true, destination);
+  }
+  for (const destination of ["kitchener", "london", "kingston", "ottawa", "montreal"]) {
+    assert.equal(ftlLtlFuelDestinations.has(destination), false, destination);
   }
 });
 

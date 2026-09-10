@@ -283,26 +283,9 @@ export const ftlZones: Record<number, string[]> = {
 };
 
 export const ftlLtlFuelDestinations = new Set([
-  "mississauga",
-  "etobicoke",
-  "brampton",
-  "halton hills",
-  "toronto premium outlets",
-  "oakville",
-  "pickering",
-  "toronto",
-  "oshawa",
-  "georgetown",
-  "orangeville",
-  "bolton",
-  "newmarket",
-  "vaughan",
-  "markham",
-  "scarborough",
-  "burlington",
-  "north york",
-  "richmond hill",
-  "milton",
+  ...ftlZones[1],
+  ...ftlZones[2],
+  ...ftlZones[3],
 ]);
 
 export const montrealLocal = [
